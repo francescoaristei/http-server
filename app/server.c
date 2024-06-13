@@ -8,7 +8,7 @@
 #include <unistd.h>
 
 # define BUF_SIZE 8192
-# define MAX_LINE 8092
+# define MAX_LINE 4096
 
 /* struct that defines an internal buffer where to read/write avoiding frequent traps to OS */
 typedef struct {
@@ -160,7 +160,7 @@ int main () {
 	rio_init(&riot, conn_fd);
 
 	// read request into bufRequest
-	while ((n = rio_readnb(conn_fd, bufRequest, MAX_LINE) != 0)) {
+	while ((n = rio_readnb(&riot, bufRequest, MAX_LINE) != 0)) {
 		printf("%d bytes read by the server\n", n);
 	}
 
