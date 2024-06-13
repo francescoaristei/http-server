@@ -184,8 +184,6 @@ int main () {
 
 	parseRequest(bufRequest, bufResponse);
 
-	printf("AAAAA%s\n", bufResponse);
-
 	ssize_t nres = rio_writen(conn_fd, bufResponse, strlen(bufResponse));
 	
 	close(conn_fd);
