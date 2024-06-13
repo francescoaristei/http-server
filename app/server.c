@@ -105,7 +105,10 @@ void parseRequest (char *requestBuf, char *responseBuf) {
 	int i_path = 0;
     while (requestBuf[i_request] != '\0' && requestBuf[i_request] != '\r' && requestBuf[i_request] != '\n') {
         if (requestBuf[i_request] == ' ') {
-            if (startPath) break;  // End of path
+            if (startPath) {
+				printf("ENTERED3\n");
+				break;  // end of path
+			}
         } else {
             if (requestBuf[i_request] == '/') startPath = 1;
             if (startPath) path[i_path++] = requestBuf[i_request];
@@ -121,6 +124,8 @@ void parseRequest (char *requestBuf, char *responseBuf) {
 		strcpy(responseBuf, "HTTP/1.1 200 OK\r\n\r\n");
 	else
 		strcpy(responseBuf, "HTTP/1.1 404 Not Found\r\n\r\n");
+
+	printf("ENTERED4\n");
 }
 
 
@@ -185,8 +190,12 @@ int main () {
 		printf ("The request path is: %s\n", bufRequest);
 	}
 
+	printf("ENTERED1\n");
+
 	bufRequest[n] = '\0';
 	parseRequest(bufRequest, bufResponse);
+
+	printf("ENTERED2\n");
 
 	ssize_t nres = rio_writen(conn_fd, bufResponse, strlen(bufResponse));
 	
