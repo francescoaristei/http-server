@@ -100,7 +100,25 @@ ssize_t rio_writen (int fd, void *buf, size_t n) {
 
 
 void parseRequest (char *requestBuf, char *responseBuf) {
-	printf("%s\n", requestBuf);
+	char path[MAX_LINE];
+	int startPath = 0;
+	int read = 1; 
+	int i_request = 0;
+	int i_path = 0;
+	while (read) {
+		if (requestBuf[i_request] == '/')
+			startPath = 1;
+		if (startPath)
+			path[i_path++] = requestBuf[i_request];
+		if (startPath && requestBuf[i_request] == ' ')
+			read = 0;
+		i_request++;
+	}
+
+	if (path == "/")
+		*responseBuf = "HTTP/1.1 200 OK\r\n\r\n";
+	else
+		*responseBuf = "HTTP/1.1 404 Not Found\r\n\r\n";
 }
 
 
@@ -160,7 +178,7 @@ int main () {
 	rio_init(&riot, conn_fd);
 
 	// read request into bufRequest
-	while ((n = rio_readnb(&riot, bufRequest, MAX_LINE) != 0)) {
+	while ((n = rio_readnb(&riot, bufRequest, MAX_LINE)) != 0) {
 		printf("%d bytes read by the server\n", n);
 	}
 
