@@ -113,8 +113,10 @@ void parseRequest (char *requestBuf, char *responseBuf) {
 			startPath = 1;
 		if (startPath)
 			path[i_path++] = requestBuf[i_request];
-		if (startPath && requestBuf[i_request] == ' ')
+		if (startPath && requestBuf[i_request] == ' ') {
 			read = 0;
+			printf("ENTERED\n");
+		}
 		i_request++;
 	}
 
@@ -198,6 +200,8 @@ int main () {
 
 
 	ssize_t nres = rio_writen(conn_fd, bufResponse, strlen(bufResponse));
+
+	printf("%d\n", nres);
 	
 	close(conn_fd);
 	close(server_fd);
