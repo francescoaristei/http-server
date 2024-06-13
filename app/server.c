@@ -121,6 +121,8 @@ void parseRequest (char *requestBuf, char *responseBuf) {
 		strcpy(responseBuf, "HTTP/1.1 200 OK\r\n\r\n");
 	else
 		strcpy(responseBuf, "HTTP/1.1 404 Not Found\r\n\r\n");
+	
+	printf("ENTERED1\n");
 }
 
 
@@ -188,7 +190,7 @@ int main () {
 	bufRequest[n] = '\0';
 	parseRequest(bufRequest, bufResponse);
 
-	printf("ENTERED\n");
+	printf("ENTERED2\n");
 
 	ssize_t nres = rio_writen(conn_fd, bufResponse, strlen(bufResponse));
 	
