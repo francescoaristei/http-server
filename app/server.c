@@ -83,8 +83,6 @@ ssize_t rio_writen (int fd, void *buf, size_t n) {
 	size_t nleft = n;
 	ssize_t nwritten;
 
-	printf("ETNERED\n");
-
 	while (nleft > 0) {
 		if ((nwritten = write(fd, buf, nleft)) <= 0) {
 			if (errno == EINTR)
@@ -92,6 +90,7 @@ ssize_t rio_writen (int fd, void *buf, size_t n) {
 			else
 				return - 1;
 		}
+		printf("%d\n", nwritten);
 		nleft -= nwritten;
 		buf += nwritten;
 	}
