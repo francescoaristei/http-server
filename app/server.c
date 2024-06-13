@@ -114,6 +114,7 @@ void parseRequest (char *requestBuf, char *responseBuf) {
 		i_request++;
 	}
 
+	// null terminate
 	path[i_path] = '\0';
 
 	if (strcmp(path, '/') == 0)
@@ -185,6 +186,8 @@ int main () {
 
 	bufRequest[n] = '\0';
 	parseRequest(bufRequest, bufResponse);
+
+	bufResponse = "AAAAAAA";
 
 	ssize_t nres = rio_writen(conn_fd, bufResponse, strlen(bufResponse));
 	
