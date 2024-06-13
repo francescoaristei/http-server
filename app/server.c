@@ -83,10 +83,6 @@ ssize_t rio_writen (int fd, void *buf, size_t n) {
 	size_t nleft = n;
 	ssize_t nwritten;
 
-	char *tempbuf = buf;
-	printf("AAAAAA\n");
-	printf("AAAAAAA%s\n", tempbuf);
-
 	while (nleft > 0) {
 		if ((nwritten = write(fd, buf, nleft)) <= 0) {
 			if (errno == EINTR)
@@ -183,10 +179,15 @@ int main () {
 	// initialize internal buffer to read from conn_fd
 	rio_init(&riot, conn_fd);
 
+	n = rio_readnb(&riot, bufRequest, MAX_LINE - 1);
+	printf("%d bytes read by the server.\n", n);
+	printf ("The request path is: %s\n", bufRequest);
+	
 	// read request into bufRequest
-	while ((n = rio_readnb(&riot, bufRequest, MAX_LINE - 1)) != 0) {
-		printf("%d bytes read by the server\n", n);
-	}
+	/*while ((n = rio_readnb(&riot, bufRequest, MAX_LINE - 1)) != 0) {
+		printf("%d bytes read by the server.\n", n);
+		printf ("The request path is: %s\n", bufRequest);
+	}*/
 
 	bufRequest[n] = '\0';
 	parseRequest(bufRequest, bufResponse);
