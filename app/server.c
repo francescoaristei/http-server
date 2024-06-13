@@ -79,7 +79,7 @@ size_t rio_readnb (rio_t  *riot, void *usrbuf, size_t n) {
 
 
 /* buffered write, used to avoid dealing with short counts encountered in network applications due to network delay etc. */
-ssize_t rio_writen (int fd, char *buf, size_t n) {
+ssize_t rio_writen (int fd, void *buf, size_t n) {
 	size_t nleft = n;
 	ssize_t nwritten;
 
@@ -114,7 +114,9 @@ void parseRequest (char *requestBuf, char *responseBuf) {
 		i_request++;
 	}
 
-	if (path == "/")
+	path[i_path] = '\0';
+
+	if (strcmp(path, '/') == 0)
 		strcpy(responseBuf, "HTTP/1.1 200 OK\r\n\r\n");
 	else
 		strcpy(responseBuf, "HTTP/1.1 404 Not Found\r\n\r\n");
@@ -177,10 +179,11 @@ int main () {
 	rio_init(&riot, conn_fd);
 
 	// read request into bufRequest
-	while ((n = rio_readnb(&riot, bufRequest, MAX_LINE)) != 0) {
+	while ((n = rio_readnb(&riot, bufRequest, MAX_LINE - 1)) != 0) {
 		printf("%d bytes read by the server\n", n);
 	}
 
+	bufRequest[n] = '\0';
 	parseRequest(bufRequest, bufResponse);
 
 	ssize_t nres = rio_writen(conn_fd, bufResponse, strlen(bufResponse));
