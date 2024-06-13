@@ -187,7 +187,7 @@ int main () {
 	bufRequest[n] = '\0';
 	parseRequest(bufRequest, bufResponse);
 
-	bufResponse = "AAAAAAA";
+	strcpy(bufResponse, "AAAAAAA");
 
 	ssize_t nres = rio_writen(conn_fd, bufResponse, strlen(bufResponse));
 	
