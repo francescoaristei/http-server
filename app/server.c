@@ -84,6 +84,7 @@ ssize_t rio_writen (int fd, void *buf, size_t n) {
 	ssize_t nwritten;
 
 	char *tempbuf = buf;
+	printf("AAAAAA\n");
 	printf("AAAAAAA%s\n", tempbuf);
 
 	while (nleft > 0) {
