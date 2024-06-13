@@ -84,7 +84,6 @@ ssize_t rio_writen (int fd, void *buf, size_t n) {
 	ssize_t nwritten;
 
 	while (nleft > 0) {
-		printf("entered\n");
 		if ((nwritten = write(fd, buf, nleft)) <= 0) {
 			if (errno == EINTR)
 				nwritten = 0;
@@ -102,10 +101,10 @@ ssize_t rio_writen (int fd, void *buf, size_t n) {
 void parseRequest (char *requestBuf, char *responseBuf) {
 	char path[MAX_LINE];
 	int startPath = 0;
-	int read = 1; 
+	//int read = 1; 
 	int i_request = 0;
 	int i_path = 0;
-	while (read) {
+	/*while (read) {
 		if (requestBuf[i_request] == '/')
 			startPath = 1;
 		if (startPath)
@@ -113,7 +112,17 @@ void parseRequest (char *requestBuf, char *responseBuf) {
 		if (startPath && requestBuf[i_request] == ' ')
 			read = 0;
 		i_request++;
-	}
+	}*/
+
+	while (requestBuf[i_request] != '\0' && requestBuf[i_request] != '\r' && requestBuf[i_request] != '\n') {
+        if (requestBuf[i_request] == ' ') {
+            if (startPath) break;  // End of path
+        } else {
+            if (requestBuf[i_request] == '/') startPath = 1;
+            if (startPath) path[i_path++] = requestBuf[i_request];
+        }
+        i_request++;
+    }
 
 	// null terminate
 	path[i_path] = '\0';
