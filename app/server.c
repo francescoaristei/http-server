@@ -119,8 +119,6 @@ void parseRequest (char *requestBuf, char *responseBuf) {
 		*responseBuf = "HTTP/1.1 200 OK\r\n\r\n";
 	else
 		*responseBuf = "HTTP/1.1 404 Not Found\r\n\r\n";
-
-	printf("%s", responseBuf);
 }
 
 
@@ -136,7 +134,7 @@ int main () {
 
 	// buffer to read request
 	char bufRequest[MAX_LINE];
-	char *bufResponse[MAX_LINE];
+	char bufResponse[MAX_LINE];
 
 	int server_fd, client_addr_len, conn_fd;
 	struct sockaddr_in client_addr;
