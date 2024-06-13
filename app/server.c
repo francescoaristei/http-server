@@ -115,6 +115,8 @@ void parseRequest (char *requestBuf, char *responseBuf) {
 		i_request++;
 	}
 
+	printf("%s\n", path);
+
 	if (path == "/")
 		*responseBuf = "HTTP/1.1 200 OK\r\n\r\n";
 	else
