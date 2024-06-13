@@ -101,18 +101,18 @@ ssize_t rio_writen (int fd, void *buf, size_t n) {
 void parseRequest (char *requestBuf, char *responseBuf) {
 	char path[MAX_LINE];
 	int startPath = 0;
-	int read = 1; 
 	int i_request = 0;
 	int i_path = 0;
-	while (read) {
-		if (requestBuf[i_request] == '/')
-			startPath = 1;
-		if (startPath)
-			path[i_path++] = requestBuf[i_request];
-		if (startPath && requestBuf[i_request] == ' ')
-			read = 0;
-		i_request++;
-	}
+    while (requestBuf[i_request] != '\0' && requestBuf[i_request] != '\r' && requestBuf[i_request] != '\n') {
+        if (requestBuf[i_request] == ' ') {
+            if (startPath) break;  // End of path
+        } else {
+            if (requestBuf[i_request] == '/') startPath = 1;
+            if (startPath) path[i_path++] = requestBuf[i_request];
+        }
+        i_request++;
+    }
+
 
 	// null terminate
 	path[i_path] = '\0';
@@ -121,8 +121,6 @@ void parseRequest (char *requestBuf, char *responseBuf) {
 		strcpy(responseBuf, "HTTP/1.1 200 OK\r\n\r\n");
 	else
 		strcpy(responseBuf, "HTTP/1.1 404 Not Found\r\n\r\n");
-	
-	printf("ENTERED1\n");
 }
 
 
@@ -189,8 +187,6 @@ int main () {
 
 	bufRequest[n] = '\0';
 	parseRequest(bufRequest, bufResponse);
-
-	printf("ENTERED2\n");
 
 	ssize_t nres = rio_writen(conn_fd, bufResponse, strlen(bufResponse));
 	
