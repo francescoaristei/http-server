@@ -83,6 +83,9 @@ ssize_t rio_writen (int fd, void *buf, size_t n) {
 	size_t nleft = n;
 	ssize_t nwritten;
 
+	char *tempbuf = buf;
+	printf("%s\n", tempbuf);
+
 	while (nleft > 0) {
 		if ((nwritten = write(fd, buf, nleft)) <= 0) {
 			if (errno == EINTR)
@@ -187,7 +190,6 @@ int main () {
 	bufRequest[n] = '\0';
 	parseRequest(bufRequest, bufResponse);
 
-	strcpy(bufResponse, "AAAAAAA");
 
 	ssize_t nres = rio_writen(conn_fd, bufResponse, strlen(bufResponse));
 	
