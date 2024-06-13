@@ -79,11 +79,10 @@ size_t rio_readnb (rio_t  *riot, void *usrbuf, size_t n) {
 
 
 /* buffered write, used to avoid dealing with short counts encountered in network applications due to network delay etc. */
-ssize_t rio_writen (int fd, void *buf, size_t n) {
+ssize_t rio_writen (int fd, char *buf, size_t n) {
 	size_t nleft = n;
 	ssize_t nwritten;
 
-	printf("%d\n", nleft);
 	while (nleft > 0) {
 		if ((nwritten = write(fd, buf, nleft)) <= 0) {
 			if (errno == EINTR)
