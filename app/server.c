@@ -119,6 +119,8 @@ void parseRequest (char *requestBuf, char *responseBuf) {
 		strcpy(responseBuf, "HTTP/1.1 200 OK\r\n\r\n");
 	else
 		strcpy(responseBuf, "HTTP/1.1 404 Not Found\r\n\r\n");
+
+	printf("%s\n", responseBuf);
 }
 
 
