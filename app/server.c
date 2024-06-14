@@ -234,7 +234,7 @@ int main () {
 		bufRequest[total_read] = '\0';
 		printf("AA%s\n", bufRequest);
 
-		if (strstr(bufRequest, "\n\r\r\n") != NULL) {
+		if (strstr(bufRequest, "\r\n\r\n") != NULL) {
 			request_complete = 1;
 		}
 	}
