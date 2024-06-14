@@ -206,7 +206,7 @@ int main () {
 	ssize_t nres = rio_writen(conn_fd, bufResponse, strlen(bufResponse));
 	
 	//close(conn_fd);
-	close(server_fd);
+	//close(server_fd);
 
 	return 0;
 }
