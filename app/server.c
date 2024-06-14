@@ -189,29 +189,36 @@ int main() {
     // initialize internal buffer to read from conn_fd
     rio_init(&riot, conn_fd);
 
-    // read request into bufRequest
-    if ((n = rio_readnb(&riot, bufRequest, MAX_LINE - 1)) > 0) {
-        bufRequest[n] = '\0'; // Null-terminate the buffer
-        printf("%zu bytes read by the server.\n", n);
-    }
+	size_t total_read = 0;
+	int request_complete = 0;
 
-    if (n < 0) {
-        printf("Reading failed...\n");
-        close(conn_fd);
-        close(server_fd);
-        return 1;
-    }
+	while (!request_complete) {
+		n = rio_readnb(&riot, bufRequest + total_read, MAX_LINE - 1 - total_read);
+		if (n <= 0) {
+			printf("Reading failed...\n");
+			close(conn_fd);
+			close(server_fd);
+			return 1;
+		}
+		total_read += n;
+		bufRequest[total_read] = '\0';
 
-    printf("The request path is: %s\n", bufRequest);
+		if (strstr(bufRequest, "\r\n\r\n") != NULL) {
+			request_complete = 1;
+		}
+	}
 
-    parseRequest(bufRequest, bufResponse);
+	printf("The request path is: %s\n", bufRequest);
 
-    ssize_t nres = rio_writen(conn_fd, bufResponse, strlen(bufResponse));
-    if (nres < 0) {
-        printf("Writing response failed...\n");
-    } else {
-        printf("Response sent: %s\n", bufResponse);
-    }
+	parseRequest(bufRequest, bufResponse);
+
+	ssize_t nres = rio_writen(conn_fd, bufResponse, strlen(bufResponse));
+	if (nres < 0) {
+		printf("Writing response failed...\n");
+	} else {
+		printf("Response sent: %s\n", bufResponse);
+	}
+
 
     close(conn_fd);
     close(server_fd);
