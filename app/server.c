@@ -105,10 +105,7 @@ void parseRequest (char *requestBuf, char *responseBuf) {
 	int startPath = 0;
 	int i_request = 0;
 	int i_path = 0;
-	for (int i = 0; requestBuf[i] != '\0'; i++) {
-		i_path++;
-	}
-	printf("%d\n", i_path);
+
     while (requestBuf[i_request] != '\0' && requestBuf[i_request] != '\r' && requestBuf[i_request] != '\n') {
         if (requestBuf[i_request] == ' ') {
             if (startPath) {
@@ -192,6 +189,8 @@ int main () {
 		printf("%d bytes read by the server.\n", n);
 		printf ("The request path is: %s\n", bufRequest);
 	}
+
+	printf("%c\n", bufRequest[n]);
 
 	bufRequest[n] = '\0';
 	parseRequest(bufRequest, bufResponse);
