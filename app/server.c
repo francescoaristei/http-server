@@ -185,12 +185,10 @@ int main () {
 	rio_init(&riot, conn_fd);
 	
 	// read request into bufRequest
-	while ((n = rio_readnb(&riot, bufRequest, MAX_LINE - 1)) != 0) {
-		printf("%d bytes read by the server.\n", n);
-		printf ("The request path is: %s\n", bufRequest);
-	}
+	n = rio_readnb(&riot, bufRequest, MAX_LINE - 1);
+	printf("%d bytes read by the server.\n", n);
+	printf ("The request path is: %s\n", bufRequest);
 
-	printf("%c\n", bufRequest[n]);
 
 	bufRequest[n] = '\0';
 	parseRequest(bufRequest, bufResponse);
