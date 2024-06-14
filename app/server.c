@@ -85,6 +85,8 @@ ssize_t rio_writen (int fd, void *buf, size_t n) {
 	ssize_t nwritten;
 	char *bufp = buf;
 
+	printf("%s\n", bufp);
+
 	while (nleft > 0) {
 		if ((nwritten = write(fd, bufp, nleft)) <= 0) {
 			if (errno == EINTR)
