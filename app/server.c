@@ -86,7 +86,6 @@ ssize_t rio_writen (int fd, void *buf, size_t n) {
 	char *bufp = buf;
 
 	printf("%s\n", bufp);
-	//printf("AAA%d\n", nleft);
 
 	while (nleft > 0) {
 		if ((nwritten = write(fd, bufp, nleft)) <= 0) {
@@ -206,7 +205,7 @@ int main () {
 
 	ssize_t nres = rio_writen(conn_fd, bufResponse, strlen(bufResponse));
 	
-	close(conn_fd);
+	//close(conn_fd);
 	close(server_fd);
 
 	return 0;
