@@ -7,7 +7,6 @@
 #include <errno.h>
 #include <unistd.h>
 
-/* SOLVE INFINITE LOOP! */
 
 # define BUF_SIZE 8192
 # define MAX_LINE 4096
@@ -122,6 +121,8 @@ void parseRequest (char *requestBuf, char *responseBuf) {
 	// null terminate
 	path[i_path] = '\0';
 
+	printf("%s\n", path);
+
 	if (strcmp(path, "/") == 0)
 		strcpy(responseBuf, "HTTP/1.1 200 OK\r\n\r\n");
 	else
@@ -189,7 +190,7 @@ int main () {
 	printf("%d bytes read by the server.\n", n);
 	printf ("The request path is: %s\n", bufRequest);
 
-	printf("%s\n", bufRequest);
+	//printf("%s\n", bufRequest);
 	bufRequest[n] = '\0';
 	parseRequest(bufRequest, bufResponse);
 
