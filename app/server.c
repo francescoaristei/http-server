@@ -95,9 +95,8 @@ ssize_t rio_writen (int fd, void *buf, size_t n) {
 			else
 				return - 1;
 		}
-		printf("AAA%d\n", nwritten);
 		nleft -= nwritten;
-		buf += nwritten;
+		bufp += nwritten;
 	}
 
 	return n;
