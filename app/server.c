@@ -181,6 +181,10 @@ int main () {
 	client_addr_len = sizeof(client_addr);
 	
 	conn_fd = accept(server_fd, (struct sockaddr *) &client_addr, &client_addr_len);
+	if (conn_fd == -1) {
+		printf("Client not connected, exiting...");
+		return 1;
+	}
 	printf("Client connected\n");
 
 	// initialize internal buffer to read from conn_fd
@@ -194,9 +198,6 @@ int main () {
 	//printf("%s\n", bufRequest);
 	bufRequest[n] = '\0';
 	parseRequest(bufRequest, bufResponse);
-
-	printf("%s\n", bufResponse);
-	printf("%d\n", strlen(bufResponse));
 
 	ssize_t nres = rio_writen(conn_fd, bufResponse, strlen(bufResponse));
 	
