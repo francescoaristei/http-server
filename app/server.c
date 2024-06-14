@@ -106,6 +106,7 @@ void parseRequest (char *requestBuf, char *responseBuf) {
 	int i_request = 0;
 	int i_path = 0;
     while (requestBuf[i_request] != '\0' && requestBuf[i_request] != '\r' && requestBuf[i_request] != '\n') {
+		printf("ENTERED\n");
         if (requestBuf[i_request] == ' ') {
             if (startPath) {
 				break;  // end of path
@@ -121,7 +122,7 @@ void parseRequest (char *requestBuf, char *responseBuf) {
 	// null terminate
 	path[i_path] = '\0';
 
-	if (strcmp(path, '/') == 0)
+	if (strcmp(path, "/") == 0)
 		strcpy(responseBuf, "HTTP/1.1 200 OK\r\n\r\n");
 	else
 		strcpy(responseBuf, "HTTP/1.1 404 Not Found\r\n\r\n");
