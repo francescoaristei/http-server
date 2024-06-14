@@ -89,10 +89,13 @@ ssize_t rio_writen (int fd, void *buf, size_t n) {
 
 	while (nleft > 0) {
 		if ((nwritten = write(fd, bufp, nleft)) <= 0) {
-			if (errno == EINTR)
+			if (errno == EINTR) {
+				printf("EINTR.\n");
 				nwritten = 0;
-			else
+			} else {
+				printf("Write Error.\n");
 				return - 1;
+			}
 		}
 		nleft -= nwritten;
 		bufp += nwritten;
@@ -205,8 +208,8 @@ int main () {
 
 	ssize_t nres = rio_writen(conn_fd, bufResponse, strlen(bufResponse));
 	
-	//close(conn_fd);
-	//close(server_fd);
+	close(conn_fd);
+	close(server_fd);
 
 	return 0;
 }
