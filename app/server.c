@@ -85,9 +85,6 @@ ssize_t rio_writen (int fd, void *buf, size_t n) {
 	ssize_t nwritten;
 	char *bufp = buf;
 
-	//printf("%s\n", bufp);
-	printf("%d\n", nleft);
-
 	while (nleft > 0) {
 		if ((nwritten = write(fd, bufp, nleft)) <= 0) {
 			if (errno == EINTR) {
@@ -212,10 +209,18 @@ int main () {
 
 	parseRequest(bufRequest, bufResponse);
 
+	printf("Response to be sent: %s\n", bufResponse);
+
 	ssize_t nres = rio_writen(conn_fd, bufResponse, strlen(bufResponse));
 	
+    if (nres < 0) {
+        printf("Writing response failed.\n");
+    } else {
+        printf("Response sent successfully.\n");
+    }
+
 	close(conn_fd);
-	close(server_fd);
+	//close(server_fd);
 
 	return 0;
 }
