@@ -232,7 +232,7 @@ int main () {
 
 		total_read += n;
 		bufRequest[total_read] = '\0';
-		printf("%s\n", bufRequest);
+		printf("AA%s\n", bufRequest);
 
 		if (strstr(bufRequest, "\n\r\r\n") != NULL) {
 			request_complete = 1;
