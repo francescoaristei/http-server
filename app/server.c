@@ -189,7 +189,7 @@ int main () {
 	printf("%d bytes read by the server.\n", n);
 	printf ("The request path is: %s\n", bufRequest);
 
-	printf("%c\n", bufRequest[n]);
+	printf("%c\n", bufRequest[n -1]);
 	bufRequest[n] = '\0';
 	parseRequest(bufRequest, bufResponse);
 
