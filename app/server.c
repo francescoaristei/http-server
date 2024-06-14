@@ -83,9 +83,10 @@ size_t rio_readnb (rio_t  *riot, void *usrbuf, size_t n) {
 ssize_t rio_writen (int fd, void *buf, size_t n) {
 	size_t nleft = n;
 	ssize_t nwritten;
+	char *bufp = buf;
 
 	while (nleft > 0) {
-		if ((nwritten = write(fd, buf, nleft)) <= 0) {
+		if ((nwritten = write(fd, bufp, nleft)) <= 0) {
 			if (errno == EINTR)
 				nwritten = 0;
 			else
@@ -185,6 +186,7 @@ int main () {
 		printf("Client not connected, exiting...");
 		return 1;
 	}
+
 	printf("Client connected\n");
 
 	// initialize internal buffer to read from conn_fd
