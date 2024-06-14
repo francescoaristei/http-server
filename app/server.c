@@ -106,7 +106,7 @@ void parseRequest (char *requestBuf, char *responseBuf) {
 	int i_request = 0;
 	int i_path = 0;
 	for (int i = 0; requestBuf[i] != '\0'; i++) {
-		printf("%c\n", requestBuf[i]);
+		printf("AAAAAA%c\n", requestBuf[i]);
 	}
     while (requestBuf[i_request] != '\0' && requestBuf[i_request] != '\r' && requestBuf[i_request] != '\n') {
         if (requestBuf[i_request] == ' ') {
