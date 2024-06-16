@@ -184,6 +184,7 @@ void echo_endpoint (char *path, char *bufResponse) {
     char response[MAX_LINE];
     char true_path[MAX_LINE];
     find_path(path, true_path);
+    printf("%s\n", find_path);
     char *ptr = strstr(true_path, "echo");
     if (ptr == NULL) {
         if (true_path == "/") {
