@@ -187,11 +187,11 @@ void echo_endpoint (char *path, char *bufResponse) {
     char *ptr = strstr(true_path, "echo");
     if (ptr == NULL) {
         if (true_path == "/") {
-            strcpy(response, "HTTP/1.1 200 OK\r\n\r\n");
+            strcpy(bufResponse, "HTTP/1.1 200 OK\r\n\r\n");
             return;
         }
         else {
-            strcpy(response, "HTTP/1.1 404 Not Found\r\n\r\n");
+            strcpy(bufResponse, "HTTP/1.1 404 Not Found\r\n\r\n");
             return;
         }
     }
