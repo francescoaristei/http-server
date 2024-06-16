@@ -184,7 +184,6 @@ void echo_endpoint (char *path, char *bufResponse) {
     char response[MAX_LINE];
     char true_path[MAX_LINE];
     find_path(path, true_path);
-    printf("AAAA%s\n", true_path);
     char *ptr = strstr(true_path, "echo");
     if (ptr == NULL) {
         if (true_path == "/") {
@@ -200,12 +199,13 @@ void echo_endpoint (char *path, char *bufResponse) {
     int len = strlen("echo");
     ptr += len;
     int i;
-    for (i = 0; *ptr != '\0'; i++)
+    for (i = 0; *ptr != '\0'; i++) {
+        
         response[i] = *++ptr;
+        printf("%c - %d\n", *ptr, i);
+    }
 
     response[i--] = '\0';
-
-    //
 
     sprintf(bufResponse, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s", i, response);
     printf("%s\n", bufResponse);
