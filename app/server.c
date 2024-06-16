@@ -8,8 +8,8 @@
 #include <unistd.h>
 
 
-# define BUF_SIZE 8192
-# define MAX_LINE 4096
+# define BUF_SIZE 2048
+# define MAX_LINE 1024
 
 /* struct that defines an internal buffer where to read/write avoiding frequent traps to OS */
 typedef struct {
@@ -31,6 +31,7 @@ void rio_init (rio_t *riot, int fd) {
 ssize_t rio_read (rio_t *riot, char *usrbuf, size_t n) {
     int cnt;
     while (riot->rio_cnt <= 0) {
+        // careful: if there is no input to read anymore (all consumed at previous iterations), it blocks
         riot->rio_cnt = read(riot->rio_fd, riot->buf, sizeof(riot->buf));
         if (riot->rio_cnt < 0) {
             if (errno != EINTR) { // sighandler
@@ -82,7 +83,6 @@ size_t rio_readnb (rio_t  *riot, void *usrbuf, size_t n) {
 ssize_t rio_readlineb (rio_t *rp, void *usrbuf, size_t maxlen) {
 	int n, rc;
 	char c, *bufp = usrbuf;
-
 	for (n = 1; n < maxlen; n++) {
 		if ((rc = rio_read(rp, &c, 1)) == 1) {
 			*bufp++ = c;
@@ -90,11 +90,11 @@ ssize_t rio_readlineb (rio_t *rp, void *usrbuf, size_t maxlen) {
 				break;
 		} else if (rc == 0) {
 			if (n == 1)
-				return 0;
+				return 0; // EOF no data to read
 			else
-				break;
+				break; // EOF some data was read
 		} else
-			return -1;
+			return -1; // Error
 	}
 	*bufp = 0;
 	return n;
@@ -157,6 +157,22 @@ void parseRequest (char *requestBuf, char *responseBuf) {
     }
 }
 
+// echo endpoint
+void echo_endpoint (char *path, char *bufResponse) {
+    char response[MAX_LINE];
+    char *ptr = strstr(path, "echo");
+    int len = strlen("echo");
+    ptr += len;
+    int i;
+    for (i = 0; *ptr != ' '; i++)
+        response[i] = *++ptr;
+
+    response[i] = '\0';
+
+    sprintf(bufResponse, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s", i, response);
+    printf("%s\n", bufResponse);
+}
+
 
 int main () {
     // Disable output buffering
@@ -171,6 +187,9 @@ int main () {
     // buffer to read request
     char bufRequest[MAX_LINE];
     char bufResponse[MAX_LINE];
+    char body[MAX_LINE];
+    char path[MAX_LINE];
+    char headers[MAX_LINE][MAX_LINE];
 
     int server_fd, client_addr_len, conn_fd;
     struct sockaddr_in client_addr;
@@ -221,27 +240,71 @@ int main () {
     // read request into bufRequest
 
 	int request_complete = 0;
+    int is_body = 0;
 	int total_read = 0;
+    int is_header = 0;
+    int header_count = 0;
+    //char string[MAX_LINE];
 
-	while (!request_complete) {
-		n = rio_readlineb(&riot, bufRequest + total_read, MAX_LINE);
+	while (1) {
+	    //n = rio_readlineb(&riot, bufRequest + total_read, MAX_LINE);
+		//n = rio_readnb(&riot, bufRequest + total_read, MAX_LINE);
+        n = rio_readlineb(&riot, bufRequest, MAX_LINE);
 		if (n < 0) {
 			printf("Error reading...\n");
 			return 1;
 		}
 
-		total_read += n;
-		bufRequest[total_read] = '\0';
-		printf("AA%s\n", bufRequest);
+        /* TO-DO: understand how to handle */
+        if (n == 0) {
 
-		if (strstr(bufRequest, "\r\n\r\n") != NULL) {
-			request_complete = 1;
-		}
+        }
+
+        //bufRequest[total_read + n] = '\0';
+        bufRequest[n] = '\0';
+
+        /*for (int i = total_read; i <= total_read + n; i++) {
+            string[i - total_read] = bufRequest[i];
+        }*/
+
+
+		//total_read += n;
+		//bufRequest[total_read] = '\0';
+
+        /* path */
+        if (!is_header) {
+            strcpy(path, bufRequest);
+            printf("The path is: %s\n", path);
+            is_header = 1;
+            continue; /* next iteration */
+        }
+
+        /* headers */
+        if (is_header && !is_body) {
+            /* end of header section */
+            if (strcmp(bufRequest, "\r\n") == 0) {
+                /* check content length */
+                for (int i = 0; i < header_count; i++) {
+                    if (strstr("Content-length:", headers[i])) {
+                        is_body = 1;
+                        continue; /* next iteration */
+                    }
+                }
+                break; /* no body */
+            }
+            strcpy(headers[header_count++], bufRequest);
+            printf("The header n. %d is: %s\n", header_count, bufRequest);
+        }
+
+        /* body */
+        if (is_body) {
+            strcpy(body, bufRequest);
+            printf("The body is: %s\n", body); /* empty for now */
+            break;
+        }
 	}
 
-    printf ("The request path is: %s\n", bufRequest);
-
-    parseRequest(bufRequest, bufResponse);
+    echo_endpoint(path, bufResponse);
 
     ssize_t nres = rio_writen(conn_fd, bufResponse, strlen(bufResponse));
     
