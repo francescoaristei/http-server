@@ -204,6 +204,8 @@ void echo_endpoint (char *path, char *bufResponse) {
 
     response[i--] = '\0';
 
+    //
+
     sprintf(bufResponse, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s", i, response);
     printf("%s\n", bufResponse);
 }
