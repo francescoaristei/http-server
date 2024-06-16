@@ -167,7 +167,7 @@ void echo_endpoint (char *path, char *bufResponse) {
     for (i = 0; *ptr != ' '; i++)
         response[i] = *++ptr;
 
-    response[i] = '\0';
+    response[i--] = '\0';
 
     sprintf(bufResponse, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s", i, response);
     printf("%s\n", bufResponse);
