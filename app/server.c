@@ -132,19 +132,19 @@ void find_path (char *path, char *string) {
     int i, j = 0;
 
     while (!end_path) {
-        if (path[i] == ' ') {
+        if (path[i] == ' ' && !start_path) { /* start space */
             start_path = 1;
             i++;
         }
-        else {
-            string[j] = path[i];
-            i++;
-            j++;
+        if (start_path) {
+            string[j++] = path[i];
         }
-        if (path[i] == ' ' && start_path) {
+        if (path[i] == ' ' && start_path) { /* end space */
             string[j] = '\0';
             end_path = 1;
         }
+
+        i++;
     }
 }
 
@@ -184,7 +184,6 @@ void echo_endpoint (char *path, char *bufResponse) {
     char response[MAX_LINE];
     char true_path[MAX_LINE];
     find_path(path, true_path);
-    printf("%s\n", find_path);
     char *ptr = strstr(true_path, "echo");
     if (ptr == NULL) {
         if (true_path == "/") {
