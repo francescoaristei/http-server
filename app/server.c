@@ -182,11 +182,11 @@ void find_path (char *path, char *string) {
 // echo endpoint
 void echo_endpoint (char *path, char *bufResponse) {
     char response[MAX_LINE];
-    char string[MAX_LINE];
-    find_path(path, string);
-    char *ptr = strstr(string, "echo");
+    char true_path[MAX_LINE];
+    find_path(path, true_path);
+    char *ptr = strstr(true_path, "echo");
     if (ptr == NULL) {
-        if (string == "/") {
+        if (true_path == "/") {
             strcpy(response, "HTTP/1.1 200 OK\r\n\r\n");
             return;
         }
@@ -199,7 +199,7 @@ void echo_endpoint (char *path, char *bufResponse) {
     int len = strlen("echo");
     ptr += len;
     int i;
-    for (i = 0; *ptr != ' '; i++)
+    for (i = 0; *ptr != '\0'; i++)
         response[i] = *++ptr;
 
     response[i--] = '\0';
