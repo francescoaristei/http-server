@@ -128,20 +128,20 @@ ssize_t rio_writen (int fd, void *buf, size_t n) {
 
 void find_path (char *path, char *string) {
     int start_path = 0;
-    int end_path = 0;
     int i, j = 0;
 
-    while (!end_path) {
+    while (1) {
         if (path[i] == ' ' && !start_path) { /* start space */
             start_path = 1;
             i++;
         }
+        if (path[i] == ' ' && start_path) { /* end space */
+            string[j] = '\0';
+            break;
+        }
+
         if (start_path) {
             string[j++] = path[i];
-        }
-        if (path[i] == ' ' && start_path) { /* end space */
-            string[--j] = '\0';
-            end_path = 1;
         }
 
         i++;
