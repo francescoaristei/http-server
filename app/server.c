@@ -126,7 +126,29 @@ ssize_t rio_writen (int fd, void *buf, size_t n) {
 }
 
 
-void parseRequest (char *requestBuf, char *responseBuf) {
+void find_path (char *path, char *string) {
+    int start_path = 0;
+    int end_path = 0;
+    int i, j = 0;
+
+    while (!end_path) {
+        if (path[i] == ' ') {
+            start_path = 1;
+            i++;
+        }
+        else {
+            string[j] = path[i];
+            i++;
+            j++;
+        }
+        if (path[i] == ' ' && start_path) {
+            string[j] = '\0';
+            end_path = 1;
+        }
+    }
+}
+
+/*void parseRequest (char *requestBuf, char *responseBuf) {
     char path[MAX_LINE];
     int startPath = 0;
     int i_request = 0;
@@ -155,12 +177,25 @@ void parseRequest (char *requestBuf, char *responseBuf) {
     else {
         strcpy(responseBuf, "HTTP/1.1 404 Not Found\r\n\r\n");
     }
-}
+}*/
 
 // echo endpoint
 void echo_endpoint (char *path, char *bufResponse) {
     char response[MAX_LINE];
-    char *ptr = strstr(path, "echo");
+    char string[MAX_LINE];
+    find_path(path, string);
+    char *ptr = strstr(string, "echo");
+    if (ptr == NULL) {
+        if (string == "/") {
+            strcpy(response, "HTTP/1.1 200 OK\r\n\r\n");
+            return;
+        }
+        else {
+            strcpy(response, "HTTP/1.1 404 Not Found\r\n\r\n");
+            return;
+        }
+    }
+
     int len = strlen("echo");
     ptr += len;
     int i;
