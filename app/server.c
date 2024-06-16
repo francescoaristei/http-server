@@ -140,7 +140,7 @@ void find_path (char *path, char *string) {
             string[j++] = path[i];
         }
         if (path[i] == ' ' && start_path) { /* end space */
-            string[j] = '\0';
+            string[j--] = '\0';
             end_path = 1;
         }
 
