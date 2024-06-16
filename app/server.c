@@ -185,6 +185,7 @@ void echo_endpoint (char *path, char *bufResponse) {
     char true_path[MAX_LINE];
     find_path(path, true_path);
     char *ptr = strstr(true_path, "echo");
+    printf("%s\n", true_path);
     if (ptr == NULL) {
         if (true_path == "/") {
             strcpy(bufResponse, "HTTP/1.1 200 OK\r\n\r\n");
