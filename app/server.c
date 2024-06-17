@@ -169,7 +169,7 @@ void useragent_endpoint (char *bufResponse, char *useragent, char *response) {
     char *ch = strchr(useragent, ' ');
     int i;
     for (i = 0; *ch != '\0'; i++) {
-        response[i++] = *++ch;
+        response[i] = *++ch;
         printf("%c - %d\n", *ch, i);
 
     }
