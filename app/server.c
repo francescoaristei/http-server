@@ -156,7 +156,6 @@ void echo_endpoint (char *bufResponse, char *ptr, char *response) {
     int i;
     for (i = 0; *ptr != '\0'; i++) {
         response[i] = *++ptr;
-        printf("%c - %d\n", *ptr, i);
     }
 
     response[i--] = '\0';
@@ -168,9 +167,13 @@ void echo_endpoint (char *bufResponse, char *ptr, char *response) {
 
 void useragent_endpoint (char *bufResponse, char *useragent, char *response) {
     char *ch = strchr(useragent, ' ');
-    int i = 0;
-    while (*ch != '\0')
-        response[i++] = *ch++;
+    int i;
+    for (i = 0; *ch != '\0'; i++) {
+        response[i++] = *++ch;
+        printf("%c - %d\n", *ch, i);
+
+    }
+
     response[i] = '\0';
 
     sprintf(bufResponse, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s", i, response);
