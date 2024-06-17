@@ -173,7 +173,7 @@ void useragent_endpoint (char *bufResponse, char *useragent, char *response) {
         printf("%c - %d\n", *ch, i);
     }
 
-    response[i] = '\0';
+    response[i--] = '\0';
 
     sprintf(bufResponse, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s", i, response);
     printf("%s\n", bufResponse);
