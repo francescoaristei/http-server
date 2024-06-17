@@ -8,8 +8,9 @@
 #include <unistd.h>
 
 
-# define BUF_SIZE 2048
-# define MAX_LINE 1024
+# define BUF_SIZE 512
+# define MAX_LINE 256
+# define HEADERS 8
 
 /* struct that defines an internal buffer where to read/write avoiding frequent traps to OS */
 typedef struct {
@@ -128,7 +129,7 @@ ssize_t rio_writen (int fd, void *buf, size_t n) {
 
 void find_path (char *path, char *string) {
     int start_path = 0;
-    int i, j = 0;
+    int i = 0, j = 0;
 
     while (1) {
         if (path[i] == ' ' && !start_path) { /* start space */
@@ -147,54 +148,9 @@ void find_path (char *path, char *string) {
     }
 }
 
-/*void parseRequest (char *requestBuf, char *responseBuf) {
-    char path[MAX_LINE];
-    int startPath = 0;
-    int i_request = 0;
-    int i_path = 0;
-
-    while (requestBuf[i_request] != '\0' && requestBuf[i_request] != '\r' && requestBuf[i_request] != '\n') {
-        if (requestBuf[i_request] == ' ') {
-            if (startPath) {
-                break;  // end of path
-            }
-        } else {
-            if (requestBuf[i_request] == '/') startPath = 1;
-            if (startPath) path[i_path++] = requestBuf[i_request];
-        }
-        i_request++;
-    }
-
-
-    // null terminate
-    path[i_path] = '\0';
-
-
-    if (strcmp(path, "/") == 0) {
-        strcpy(responseBuf, "HTTP/1.1 200 OK\r\n\r\n");
-    }
-    else {
-        strcpy(responseBuf, "HTTP/1.1 404 Not Found\r\n\r\n");
-    }
-}*/
 
 // echo endpoint
-void echo_endpoint (char *path, char *bufResponse) {
-    char response[MAX_LINE];
-    char true_path[MAX_LINE];
-    find_path(path, true_path);
-    char *ptr = strstr(true_path, "echo");
-    if (ptr == NULL) {
-        if (strcmp(true_path, "/") == 0) {
-            strcpy(bufResponse, "HTTP/1.1 200 OK\r\n\r\n");
-            return;
-        }
-        else {
-            strcpy(bufResponse, "HTTP/1.1 404 Not Found\r\n\r\n");
-            return;
-        }
-    }
-
+void echo_endpoint (char *bufResponse, char *ptr, char *response) {
     int len = strlen("echo");
     ptr += len;
     int i;
@@ -209,6 +165,17 @@ void echo_endpoint (char *path, char *bufResponse) {
     printf("%s\n", bufResponse);
 }
 
+
+void useragent_endpoint (char *bufResponse, char *useragent, char *response) {
+    char *ch = strchr(useragent, ' ');
+    int i = 0;
+    while (*ch != '\0')
+        response[i++] = *ch++;
+    response[i] = '\0';
+
+    sprintf(bufResponse, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s", i, response);
+    printf("%s\n", bufResponse);
+}
 
 int main () {
     // Disable output buffering
@@ -225,7 +192,9 @@ int main () {
     char bufResponse[MAX_LINE];
     char body[MAX_LINE];
     char path[MAX_LINE];
-    char headers[MAX_LINE][MAX_LINE];
+    char headers[HEADERS][MAX_LINE];
+    char response[MAX_LINE];
+    char true_path[MAX_LINE];
 
     int server_fd, client_addr_len, conn_fd;
     struct sockaddr_in client_addr;
@@ -293,7 +262,6 @@ int main () {
 
         /* TO-DO: understand how to handle */
         if (n == 0) {
-
         }
 
         //bufRequest[total_read + n] = '\0';
@@ -306,7 +274,6 @@ int main () {
 
 		//total_read += n;
 		//bufRequest[total_read] = '\0';
-
         /* path */
         if (!is_header) {
             strcpy(path, bufRequest);
@@ -329,6 +296,7 @@ int main () {
                 break; /* no body */
             }
             strcpy(headers[header_count++], bufRequest);
+            
             printf("The header n. %d is: %s\n", header_count, bufRequest);
         }
 
@@ -340,7 +308,28 @@ int main () {
         }
 	}
 
-    echo_endpoint(path, bufResponse);
+    find_path(path, true_path);
+    char *ptr;
+
+    if ((ptr = strstr(true_path, "echo")) != NULL) {
+        echo_endpoint(bufResponse, ptr, response);
+
+    } else if ((ptr = strstr(true_path, "user-agent")) != NULL) {
+        char user_agent[MAX_LINE];
+        for (int i = 0; i < header_count; i++) {
+            if (strstr(headers[i], "User-Agent") != NULL)
+                strcpy(user_agent, headers[i]);
+        }
+        useragent_endpoint(bufResponse, user_agent, response);
+
+    } else {
+        if (strcmp(true_path, "/") == 0) {
+            strcpy(bufResponse, "HTTP/1.1 200 OK\r\n\r\n");
+        }
+        else {
+            strcpy(bufResponse, "HTTP/1.1 404 Not Found\r\n\r\n");
+        }
+    }
 
     ssize_t nres = rio_writen(conn_fd, bufResponse, strlen(bufResponse));
     
