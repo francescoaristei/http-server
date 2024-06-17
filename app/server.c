@@ -168,10 +168,9 @@ void echo_endpoint (char *bufResponse, char *ptr, char *response) {
 void useragent_endpoint (char *bufResponse, char *useragent, char *response) {
     char *ch = strchr(useragent, ' ');
     int i;
-    for (i = 0; *ch != '\0'; i++) {
+    for (i = 0; *ch != '\r'; i++) {
         response[i] = *++ch;
         printf("%c - %d\n", *ch, i);
-
     }
 
     response[i] = '\0';
