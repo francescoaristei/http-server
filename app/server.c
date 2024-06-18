@@ -241,7 +241,7 @@ void files_endpoint (char *bufResponse, char *path, char *response) {
 
     filename[j] = '\0';
 
-    strcat(path, filename);
+    strcat(dir, filename);
     printf("AAA: %s\n", path);
     
     if ((fd = open(path, O_RDONLY, 0)) == -1) {
