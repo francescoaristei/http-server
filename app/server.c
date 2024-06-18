@@ -291,8 +291,10 @@ int main (int argc, char *argv[]) {
 
     /* save the dir in case of /files endpoint */
     if (argc == 3) {
-        if (argv[1] == "--directory")
+        if (argv[1] == "--directory") {
             dir = argv[2];
+            printf("dir: %s\n", dir);
+        }
     }
 
     int server_fd, client_addr_len, conn_fd;
