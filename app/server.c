@@ -273,10 +273,12 @@ void files_endpoint (char *bufResponse, char *path, char *response) {
 
 /* shared buffer of descriptors */
 sbuf_t sbuf;
+char *dir;
 
 void *thread (void *vargv);
 
-int main () {
+int main (int argc, char *argv[]) {
+
     /* Disable output buffering */
     setbuf(stdout, NULL);
     setbuf(stderr, NULL);
@@ -287,6 +289,11 @@ int main () {
     /* initialize producer-consumer buffer */
     sbuf_init(&sbuf, SBUFSIZE);
 
+    /* save the dir in case of /files endpoint */
+    if (argc == 3) {
+        if (argv[1] == "--directory")
+            dir = argv[2];
+    }
 
     int server_fd, client_addr_len, conn_fd;
     struct sockaddr_in client_addr;
@@ -349,6 +356,7 @@ void *thread (void *vargv) {
     close(conn_fd);
 }
 
+sem_t files_mutex; 
 
 void response (int conn_fd) {
 
@@ -377,6 +385,8 @@ void response (int conn_fd) {
     int is_header = 0;
     int header_count = 0;
     //char string[MAX_LINE];
+
+    sem_init(&files_mutex, 0, 1); // binary mutex (TO-DO: change in the reader-writer paradigm?)
 
 	while (1) {
 	    //n = rio_readlineb(&riot, bufRequest + total_read, MAX_LINE);
@@ -450,7 +460,9 @@ void response (int conn_fd) {
         useragent_endpoint(bufResponse, user_agent, response);
 
     } else if ((ptr = strstr(true_path, "files")) != NULL) {
-        files_endpoint(bufResponse, true_path, response);
+        sem_wait(&files_mutex);
+        files_endpoint(bufResponse, dir, response);
+        sem_post(&files_mutex);
     
     } else {
         if (strcmp(true_path, "/") == 0) {
