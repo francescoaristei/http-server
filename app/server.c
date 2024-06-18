@@ -1,16 +1,65 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netinet/ip.h>
-#include <string.h>
-#include <errno.h>
-#include <unistd.h>
+# include <stdio.h>
+# include <stdlib.h>
+# include <sys/socket.h>
+# include <netinet/in.h>
+# include <netinet/ip.h>
+# include <string.h>
+# include <errno.h>
+# include <unistd.h>
+# include <semaphore.h>
+# include <pthread.h>
 
 
 # define BUF_SIZE 512
 # define MAX_LINE 256
 # define HEADERS 8
+# define WORKER_THREADS 4
+# define SBUFSIZE 16
+
+/* bounded buffer to implement producer-consumer pattern with worker threads */
+typedef struct {
+    int *buf; /* shared buffer between producer and consumer */
+    int n; /* max number of slots */
+    int front; /* buf[(front+1)%n] is the first item */
+    int rear; /* buf[(rear%n)] is the last item */
+    sem_t mutex; /* protects buf */
+    sem_t slots;
+    sem_t items;
+} sbuf_t;
+
+
+/* initialize sbuf_t */
+void sbuf_init (sbuf_t *sp, int n) {
+    sp -> buf = calloc(n, sizeof(int));
+    sp -> n = n;
+    sp -> front = sp -> rear = 0;
+    sem_init(&sp-> mutex, 0, 1);
+    sem_init (&sp->slots, 0, n);
+    sem_init(&sp->items, 0, 0);
+}
+
+void sbuf_deinit (sbuf_t *sp) {
+    free(sp->buf);
+}
+
+
+void sbuf_insert (sbuf_t *sp, int item) {
+    sem_wait(&sp->slots); /* decrement slots --> new item is inserted, -1 available slot */
+    sem_wait(&sp->mutex);
+    sp->buf[(++sp->rear) % (sp->n)] = item;
+    sem_post(&sp->mutex);
+    sem_post(&sp->items); /* increment items --> new item is inserted, +1 available item to consume */
+}
+
+int sbuf_remove (sbuf_t *sp) {
+    int item;
+    sem_wait(&sp->items); /* decrements items --> item removed, -1 available item to consume */
+    sem_wait(&sp->mutex);
+    item = sp->buf[(++sp->front) % (sp->n)];
+    sem_post(&sp->mutex);
+    sem_post(&sp->slots); /* increment slots --> item removed, +1 available slot for new items */
+    return item;
+}
 
 /* struct that defines an internal buffer where to read/write avoiding frequent traps to OS */
 typedef struct {
@@ -32,7 +81,7 @@ void rio_init (rio_t *riot, int fd) {
 ssize_t rio_read (rio_t *riot, char *usrbuf, size_t n) {
     int cnt;
     while (riot->rio_cnt <= 0) {
-        // careful: if there is no input to read anymore (all consumed at previous iterations), it blocks
+        /* careful: if there is no input to read anymore (all consumed at previous iterations), it blocks */
         riot->rio_cnt = read(riot->rio_fd, riot->buf, sizeof(riot->buf));
         if (riot->rio_cnt < 0) {
             if (errno != EINTR) { // sighandler
@@ -149,7 +198,7 @@ void find_path (char *path, char *string) {
 }
 
 
-// echo endpoint
+/* echo endpoint */
 void echo_endpoint (char *bufResponse, char *ptr, char *response) {
     int len = strlen("echo");
     ptr += len;
@@ -170,7 +219,6 @@ void useragent_endpoint (char *bufResponse, char *useragent, char *response) {
     int i;
     for (i = 0; *ch != '\r'; i++) {
         response[i] = *++ch;
-        printf("%c - %d\n", *ch, i);
     }
 
     response[i--] = '\0';
@@ -179,24 +227,22 @@ void useragent_endpoint (char *bufResponse, char *useragent, char *response) {
     printf("%s\n", bufResponse);
 }
 
+/* shared buffer of descriptors */
+sbuf_t sbuf;
+
+void *thread (void *vargv);
+
 int main () {
-    // Disable output buffering
+    /* Disable output buffering */
     setbuf(stdout, NULL);
     setbuf(stderr, NULL);
 
-    // internal buffer to read from client
-    rio_t riot;
-    // number of bytes read
-    size_t n;
+    /* common to all threads */
+    pthread_t tid;
 
-    // buffer to read request
-    char bufRequest[MAX_LINE];
-    char bufResponse[MAX_LINE];
-    char body[MAX_LINE];
-    char path[MAX_LINE];
-    char headers[HEADERS][MAX_LINE];
-    char response[MAX_LINE];
-    char true_path[MAX_LINE];
+    /* initialize producer-consumer buffer */
+    sbuf_init(&sbuf, SBUFSIZE);
+
 
     int server_fd, client_addr_len, conn_fd;
     struct sockaddr_in client_addr;
@@ -207,7 +253,7 @@ int main () {
         return 1;
     }
     
-    // SO_REUSEADDR ensures that we don't run into 'Address already in use' errors
+    /* SO_REUSEADDR ensures that we don't run into 'Address already in use' errors */
     int reuse = 1;
     if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse)) < 0) {
         printf("SO_REUSEADDR failed: %s \n", strerror(errno));
@@ -229,23 +275,91 @@ int main () {
         printf("Listen failed: %s \n", strerror(errno));
         return 1;
     }
+
+    for (int i = 0; i < WORKER_THREADS; i++) {
+        pthread_create(&tid, NULL, thread, NULL);
+    }
     
-    printf("Waiting for a client to connect...\n");
-    client_addr_len = sizeof(client_addr);
-    
-    conn_fd = accept(server_fd, (struct sockaddr *) &client_addr, &client_addr_len);
-    if (conn_fd == -1) {
-        printf("Client not connected, exiting...");
-        return 1;
+    while (1) {
+        printf("Waiting for a client to connect...\n");
+        client_addr_len = sizeof(client_addr);
+        conn_fd = accept(server_fd, (struct sockaddr *) &client_addr, &client_addr_len);
+        if (conn_fd == -1) {
+            printf("Client not connected, exiting...");
+            return 1;
+        }
+        printf("Client connected\n");
+        sbuf_insert(&sbuf, conn_fd);
     }
 
-    printf("Client connected\n");
+    close(server_fd);
 
-    // initialize internal buffer to read from conn_fd
+    return 0;
+}
+
+void response (int conn_fd);
+void temp_response (int conn_fd);
+
+void *thread (void *vargv) {
+    pthread_detach(pthread_self());
+    int conn_fd = sbuf_remove(&sbuf);
+    temp_response(conn_fd);
+    close(conn_fd);
+}
+
+void temp_response (int conn_fd) {
+    /* internal buffer to read from client */
+    rio_t riot;
+
+    /* number of bytes read */
+    size_t n;
+
+    /* buffer to read request */
+    char bufRequest[MAX_LINE];
+    char bufResponse[MAX_LINE];
+    rio_init(&riot, conn_fd);
+
+    while (1) {
+        n = rio_readlineb(&riot, bufRequest, MAX_LINE);
+        if (n < 0) {
+
+        }
+
+        if (n == 0) {
+
+        }
+
+        if (strcmp(bufRequest, "\r\n")) {
+            break;
+        }
+    }
+
+    strcpy(bufResponse, "HTTP/1.1 200 OK\r\n\r\n");
+    rio_writen(conn_fd, bufResponse, strlen(bufResponse));
+}
+
+
+void response (int conn_fd) {
+
+    /* internal buffer to read from client */
+    rio_t riot;
+
+    /* number of bytes read */
+    size_t n;
+
+    /* buffer to read request */
+    char bufRequest[MAX_LINE];
+    char bufResponse[MAX_LINE];
+    char body[MAX_LINE];
+    char path[MAX_LINE];
+    char headers[HEADERS][MAX_LINE];
+    char response[MAX_LINE];
+    char true_path[MAX_LINE];
+
+    /* initialize internal buffer to read from conn_fd */
     rio_init(&riot, conn_fd);
     
     // read request into bufRequest
-
 	int request_complete = 0;
     int is_body = 0;
 	int total_read = 0;
@@ -332,11 +446,5 @@ int main () {
             strcpy(bufResponse, "HTTP/1.1 404 Not Found\r\n\r\n");
         }
     }
-
     ssize_t nres = rio_writen(conn_fd, bufResponse, strlen(bufResponse));
-    
-    close(conn_fd);
-    close(server_fd);
-
-    return 0;
 }
