@@ -303,7 +303,7 @@ void temp_response (int conn_fd);
 void *thread (void *vargv) {
     pthread_detach(pthread_self());
     int conn_fd = sbuf_remove(&sbuf);
-    temp_response(conn_fd);
+    response(conn_fd);
     close(conn_fd);
 }
 
