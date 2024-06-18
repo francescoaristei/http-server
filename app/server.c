@@ -246,9 +246,9 @@ void files_endpoint (char *bufResponse, char *path, char *response) {
     printf("BBB%s\n", dir);
 
     strcat(dir, filename);
-    printf("AAA: %s\n", path);
+    printf("AAA: %s\n", dir);
     
-    if ((fd = open(path, O_RDONLY, 0)) == -1) {
+    if ((fd = open(dir, O_RDONLY, 0)) == -1) {
         printf("Error opening the file.\n");
         sprintf(bufResponse, "HTTP/1.1 404 Not Found\r\n\r\n");
         return;
