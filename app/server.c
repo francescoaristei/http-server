@@ -290,9 +290,8 @@ int main (int argc, char *argv[]) {
     sbuf_init(&sbuf, SBUFSIZE);
 
     /* save the dir in case of /files endpoint */
-    printf("AAA%s\n", argv[1]);
     if (argc == 3) {
-        if (argv[1] == "--directory") {
+        if (strcmp(argv[1], "--directory")) {
             dir = argv[2];
             printf("dir: %s\n", dir);
         }
