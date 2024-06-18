@@ -8,6 +8,8 @@
 # include <unistd.h>
 # include <semaphore.h>
 # include <pthread.h>
+# include <fcntl.h>
+# include <unistd.h>
 
 
 # define BUF_SIZE 512
@@ -227,6 +229,48 @@ void useragent_endpoint (char *bufResponse, char *useragent, char *response) {
     printf("%s\n", bufResponse);
 }
 
+void files_endpoint (char *bufResponse, char *path, char *response) {
+    int fd;
+    char c;
+    int i = 0;
+
+    /* internal buffer to read file */
+    //rio_t riot;
+
+    /* number of bytes read */
+    //size_t n;
+    
+    if ((fd = open(path, O_RDONLY, 0)) == -1) {
+        printf("Error opening the file.\n");
+        sprintf(bufResponse, "HTTP/1.1 404 Not Found\r\n\r\n");
+        exit(-1);
+    }
+
+    /* initialize internal buffer to read from conn_fd */
+    //rio_init(&riot, fd);
+
+    //int total_read = 0;
+
+    while (read(fd, &c, 1) != 0)
+        response[i++] = c;
+
+    response[i] = '\0';
+    sprintf(bufResponse, "HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: %d\r\n\r\n%s", i, response);
+
+
+    /*n = rio_readnb(&riot, response + total_read, MAX_LINE);
+		if (n < 0) {
+			printf("Error reading...\n");
+			return 1;
+		}
+
+        if (n == 0) {
+        }
+
+        response[total_read + n] = '\0';
+        total_read += n;*/
+}
+
 /* shared buffer of descriptors */
 sbuf_t sbuf;
 
@@ -406,7 +450,7 @@ void response (int conn_fd) {
         useragent_endpoint(bufResponse, user_agent, response);
 
     } else if ((ptr = strstr(true_path, "files")) != NULL) {
-        printf("AAA:%s\n", true_path);
+        files_endpoint(bufResponse, true_path, response);
     
     } else {
         if (strcmp(true_path, "/") == 0) {
