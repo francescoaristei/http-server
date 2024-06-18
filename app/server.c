@@ -293,49 +293,16 @@ int main () {
     }
 
     close(server_fd);
-
     return 0;
 }
 
 void response (int conn_fd);
-void temp_response (int conn_fd);
 
 void *thread (void *vargv) {
     pthread_detach(pthread_self());
     int conn_fd = sbuf_remove(&sbuf);
     response(conn_fd);
     close(conn_fd);
-}
-
-void temp_response (int conn_fd) {
-    /* internal buffer to read from client */
-    rio_t riot;
-
-    /* number of bytes read */
-    size_t n;
-
-    /* buffer to read request */
-    char bufRequest[MAX_LINE];
-    char bufResponse[MAX_LINE];
-    rio_init(&riot, conn_fd);
-
-    while (1) {
-        n = rio_readlineb(&riot, bufRequest, MAX_LINE);
-        if (n < 0) {
-
-        }
-
-        if (n == 0) {
-
-        }
-
-        if (strcmp(bufRequest, "\r\n")) {
-            break;
-        }
-    }
-
-    strcpy(bufResponse, "HTTP/1.1 200 OK\r\n\r\n");
-    rio_writen(conn_fd, bufResponse, strlen(bufResponse));
 }
 
 
@@ -438,6 +405,9 @@ void response (int conn_fd) {
         }
         useragent_endpoint(bufResponse, user_agent, response);
 
+    } else if ((ptr = strstr(true_path, "files")) != NULL) {
+        printf("AAA:%s\n", true_path);
+    
     } else {
         if (strcmp(true_path, "/") == 0) {
             strcpy(bufResponse, "HTTP/1.1 200 OK\r\n\r\n");
