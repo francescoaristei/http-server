@@ -229,6 +229,9 @@ void useragent_endpoint (char *bufResponse, char *useragent, char *response) {
     printf("%s\n", bufResponse);
 }
 
+
+char *dir;
+
 void files_endpoint (char *bufResponse, char *path, char *response) {
     int fd;
     char c;
@@ -249,36 +252,16 @@ void files_endpoint (char *bufResponse, char *path, char *response) {
         sprintf(bufResponse, "HTTP/1.1 404 Not Found\r\n\r\n");
         return;
     }
-
-    /* initialize internal buffer to read from conn_fd */
-    //rio_init(&riot, fd);
-
-    //int total_read = 0;
-
     while (read(fd, &c, 1) != 0)
         response[i++] = c;
 
     response[i] = '\0';
     sprintf(bufResponse, "HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: %d\r\n\r\n%s", i, response);
-
-
-    /*n = rio_readnb(&riot, response + total_read, MAX_LINE);
-		if (n < 0) {
-			printf("Error reading...\n");
-			return 1;
-		}
-
-        if (n == 0) {
-        }
-
-        response[total_read + n] = '\0';
-        total_read += n;*/
 }
+
 
 /* shared buffer of descriptors */
 sbuf_t sbuf;
-char *dir;
-
 void *thread (void *vargv);
 
 int main (int argc, char *argv[]) {
