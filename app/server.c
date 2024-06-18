@@ -291,7 +291,7 @@ int main (int argc, char *argv[]) {
 
     /* save the dir in case of /files endpoint */
     if (argc == 3) {
-        if (strcmp(argv[1], "--directory")) {
+        if (strcmp(argv[1], "--directory") == 0) {
             dir = argv[2];
             printf("dir: %s\n", dir);
         }
