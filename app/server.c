@@ -243,7 +243,7 @@ void files_endpoint (char *bufResponse, char *path, char *response) {
     if ((fd = open(path, O_RDONLY, 0)) == -1) {
         printf("Error opening the file.\n");
         sprintf(bufResponse, "HTTP/1.1 404 Not Found\r\n\r\n");
-        exit(-1);
+        return;
     }
 
     /* initialize internal buffer to read from conn_fd */
