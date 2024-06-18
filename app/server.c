@@ -232,13 +232,17 @@ void useragent_endpoint (char *bufResponse, char *useragent, char *response) {
 void files_endpoint (char *bufResponse, char *path, char *response) {
     int fd;
     char c;
-    int i = 0;
+    char filename[MAX_LINE];
+    int i = 0, j = 0;
 
-    /* internal buffer to read file */
-    //rio_t riot;
+    char *ptr = strchr(path, '/');
+    while (*ptr != '\0')
+        filename[j++] = *ptr++;
 
-    /* number of bytes read */
-    //size_t n;
+    filename[j] = '\0';
+
+    strcat(path, filename);
+    printf("AAA: %s\n", path);
     
     if ((fd = open(path, O_RDONLY, 0)) == -1) {
         printf("Error opening the file.\n");
@@ -463,7 +467,7 @@ void response (int conn_fd) {
 
     } else if ((ptr = strstr(true_path, "files")) != NULL) {
         sem_wait(&files_mutex);
-        files_endpoint(bufResponse, dir, response);
+        files_endpoint(bufResponse, ptr, response);
         sem_post(&files_mutex);
     
     } else {
