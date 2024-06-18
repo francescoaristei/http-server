@@ -243,7 +243,7 @@ void files_endpoint (char *bufResponse, char *path, char *response) {
         filename[j++] = *ptr++;
 
     filename[j] = '\0';
-    printf("BBB%s\n", filename);
+    printf("BBB%s\n", dir);
 
     strcat(dir, filename);
     printf("AAA: %s\n", path);
