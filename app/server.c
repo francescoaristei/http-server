@@ -283,7 +283,7 @@ void post_file_endpoint (char *bufResponse, char *path, char *response, char *bo
     }
 
     response[i] = '\0';
-    sprintf(bufResponse, "HTTP/1.1 201 Created \r\n\r\n");
+    sprintf(bufResponse, "HTTP/1.1 201 Created\r\n\r\n");
 }
 
 
