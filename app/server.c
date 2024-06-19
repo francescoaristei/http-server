@@ -441,7 +441,7 @@ void response (int conn_fd) {
             if (strcmp(bufRequest, "\r\n") == 0) {
                 /* check content length */
                 for (int i = 0; i < header_count; i++) {
-                    if (strstr("Content-length:", headers[i])) {
+                    if (strstr("Content-Length:", headers[i])) {
                         is_body = 1;
                         continue; /* next iteration */
                     }
@@ -455,7 +455,6 @@ void response (int conn_fd) {
 
         /* body */
         if (is_body) {
-            printf("ENTERED\n");
             strcpy(body, bufRequest);
             printf("The body is: %s\n", body);
             break;
