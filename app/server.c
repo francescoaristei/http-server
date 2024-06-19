@@ -292,6 +292,8 @@ void post_file_endpoint (char *bufResponse, char *path, char *response, char *bo
         complete_path[t++] = *fileptr++;
 
     //strcat(dir, filename);
+
+    printf("path: %s\n", complete_path);
     
     if ((fd = open(complete_path, O_WRONLY | O_APPEND | O_CREAT, 0)) == -1) {
         printf("Error creating the file.\n");
