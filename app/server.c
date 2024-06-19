@@ -240,7 +240,7 @@ void get_file_endpoint (char *bufResponse, char *path, char *response) {
 
     char *ptr = strchr(path, '/');
     while (*ptr != '\0')
-        filename[j++] = *ptr++;
+        filename[j++] = *++ptr;
 
     filename[j] = '\0';
     strcat(dir, filename);
@@ -271,7 +271,7 @@ void post_file_endpoint (char *bufResponse, char *path, char *response, char *bo
     filename[j] = '\0';
     strcat(dir, filename);
 
-    printf("BBB%s\n", dir);
+    //printf("BBB%s\n", dir);
     
     if ((fd = open(dir, O_WRONLY | O_APPEND | O_CREAT, 0)) == -1) {
         printf("Error creating the file.\n");
@@ -286,6 +286,7 @@ void post_file_endpoint (char *bufResponse, char *path, char *response, char *bo
 
     response[i] = '\0';
     strcpy(bufResponse, "HTTP/1.1 201 Created\r\n\r\n");
+    printf("AAA%s\n", bufResponse);
 }
 
 
