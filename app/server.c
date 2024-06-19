@@ -441,13 +441,15 @@ void response (int conn_fd) {
             if (strcmp(bufRequest, "\r\n") == 0) {
                 /* check content length */
                 for (int i = 0; i < header_count; i++) {
-                    printf("%s\n", headers[i]);
                     if (strstr(headers[i], "Content-Length:") != NULL) {
                         is_body = 1;
                         break; /* exit for loop */
                     }
                 }
-                continue; /* no body */
+                if (is_body)
+                    continue;
+
+                break; /* no body */
             }
             strcpy(headers[header_count++], bufRequest);
             
@@ -482,6 +484,7 @@ void response (int conn_fd) {
             get_file_endpoint(bufResponse, path_ptr, response);
             sem_post(&files_mutex);
         } else if (strstr(path, "POST") != NULL) {
+            printf("ENTERED\n");
             char req_type[MAX_LINE];
             char req_length[MAX_LINE];
             for (int i = 0; i < header_count; i++) {
