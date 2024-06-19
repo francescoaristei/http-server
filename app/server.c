@@ -271,7 +271,7 @@ void post_file_endpoint (char *bufResponse, char *path, char *response, char *bo
     filename[j] = '\0';
     strcat(dir, filename);
 
-    //printf("BBB%s\n", dir);
+    printf("BBB%s\n", dir);
     
     if ((fd = open(dir, O_WRONLY | O_APPEND | O_CREAT, 0)) == -1) {
         printf("Error creating the file.\n");
