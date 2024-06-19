@@ -253,6 +253,8 @@ void get_file_endpoint (char *bufResponse, char *path, char *response) {
     while (*fileptr != '\0')
         complete_path[t++] = *fileptr++;
 
+    complete_path[t] = '\0';
+
     printf("GET_DIR: %s\n", complete_path);
 
     //strcat(dir, filename);
@@ -291,6 +293,8 @@ void post_file_endpoint (char *bufResponse, char *path, char *response, char *bo
         complete_path[t++] = *dirptr++;
     while (*fileptr != '\0')
         complete_path[t++] = *fileptr++;
+
+    complete_path[t] = '\0';
 
     ///strcat(dir, filename);
 
