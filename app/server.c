@@ -232,7 +232,7 @@ void useragent_endpoint (char *bufResponse, char *useragent, char *response) {
 
 char *dir;
 
-void files_endpoint (char *bufResponse, char *path, char *response) {
+void get_file_endpoint (char *bufResponse, char *path, char *response) {
     int fd;
     char c;
     char filename[MAX_LINE];
@@ -243,10 +243,7 @@ void files_endpoint (char *bufResponse, char *path, char *response) {
         filename[j++] = *ptr++;
 
     filename[j] = '\0';
-    printf("BBB%s\n", dir);
-
     strcat(dir, filename);
-    printf("AAA: %s\n", dir);
     
     if ((fd = open(dir, O_RDONLY, 0)) == -1) {
         printf("Error opening the file.\n");
@@ -258,6 +255,35 @@ void files_endpoint (char *bufResponse, char *path, char *response) {
 
     response[i] = '\0';
     sprintf(bufResponse, "HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: %d\r\n\r\n%s", i, response);
+}
+
+
+void post_file_endpoint (char *bufResponse, char *path, char *response, char *body, char *req_type, char *req_length) {
+    int fd;
+    char c;
+    char filename[MAX_LINE];
+    int i = 0, j = 0, z = 0;
+
+    char *ptr = strchr(path, '/');
+    while (*ptr != '\0')
+        filename[j++] = *ptr++;
+
+    filename[j] = '\0';
+    strcat(dir, filename);
+    
+    if ((fd = open(dir, O_WRONLY | O_APPEND | O_CREAT, 0)) == -1) {
+        printf("Error creating the file.\n");
+        sprintf(bufResponse, "HTTP/1.1 404 Not Found\r\n\r\n");
+        return;
+    }
+
+    while (body[z] != '\0') {
+        write(fd, body[z], 1);
+        response[i++] = body[z++];
+    }
+
+    response[i] = '\0';
+    sprintf(bufResponse, "HTTP/1.1 201 Created \r\n\r\n");
 }
 
 
@@ -430,18 +456,18 @@ void response (int conn_fd) {
         /* body */
         if (is_body) {
             strcpy(body, bufRequest);
-            printf("The body is: %s\n", body); /* empty for now */
+            printf("The body is: %s\n", body);
             break;
         }
 	}
 
     find_path(path, true_path);
-    char *ptr;
+    char *path_ptr;
 
-    if ((ptr = strstr(true_path, "echo")) != NULL) {
-        echo_endpoint(bufResponse, ptr, response);
+    if ((path_ptr = strstr(true_path, "echo")) != NULL) {
+        echo_endpoint(bufResponse, path_ptr, response);
 
-    } else if ((ptr = strstr(true_path, "user-agent")) != NULL) {
+    } else if ((path_ptr = strstr(true_path, "user-agent")) != NULL) {
         char user_agent[MAX_LINE];
         for (int i = 0; i < header_count; i++) {
             if (strstr(headers[i], "User-Agent") != NULL)
@@ -449,11 +475,26 @@ void response (int conn_fd) {
         }
         useragent_endpoint(bufResponse, user_agent, response);
 
-    } else if ((ptr = strstr(true_path, "files")) != NULL) {
-        sem_wait(&files_mutex);
-        files_endpoint(bufResponse, ptr, response);
-        sem_post(&files_mutex);
-    
+    } else if ((path_ptr = strstr(true_path, "files")) != NULL) {
+        if (strstr(path, "GET") != NULL) {
+            sem_wait(&files_mutex);
+            get_file_endpoint(bufResponse, path_ptr, response);
+            sem_post(&files_mutex);
+        } else if (strstr(path, "POST") != NULL) {
+            char req_type[MAX_LINE];
+            char req_length[MAX_LINE];
+            for (int i = 0; i < header_count; i++) {
+                if (strstr(headers[i], "Content-Type") != NULL) {
+                    strcpy(req_type, headers[i]);
+                }
+                if (strstr(headers[i], "Content-Length") != NULL) {
+                    strcpy(req_length, headers[i]);
+                }
+            }
+            sem_wait(&files_mutex);
+            post_file_endpoint(bufResponse, path_ptr, response, body, req_type, req_length);
+            sem_post(&files_mutex);
+        }
     } else {
         if (strcmp(true_path, "/") == 0) {
             strcpy(bufResponse, "HTTP/1.1 200 OK\r\n\r\n");
