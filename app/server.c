@@ -242,7 +242,7 @@ void get_file_endpoint (char *bufResponse, char *path, char *response) {
 
     char *ptr = strchr(path, '/');
     while (*ptr != '\0')
-        filename[j++] = *ptr++;
+        filename[j++] = *++ptr;
 
     filename[j] = '\0';
 
@@ -280,7 +280,7 @@ void post_file_endpoint (char *bufResponse, char *path, char *response, char *bo
 
     char *ptr = strchr(path, '/');
     while (*ptr != '\0')
-        filename[j++] = *ptr++;
+        filename[j++] = *++ptr;
 
     filename[j] = '\0';
 
