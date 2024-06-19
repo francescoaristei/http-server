@@ -455,6 +455,7 @@ void response (int conn_fd) {
 
         /* body */
         if (is_body) {
+            printf("ENTERED\n");
             strcpy(body, bufRequest);
             printf("The body is: %s\n", body);
             break;
