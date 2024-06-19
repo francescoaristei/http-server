@@ -439,11 +439,9 @@ void response (int conn_fd) {
         if (is_header && !is_body) {
             /* end of header section */
             if (strcmp(bufRequest, "\r\n") == 0) {
-                printf("ENTERED1\n");
                 /* check content length */
                 for (int i = 0; i < header_count; i++) {
-                    if (strstr("Content-Length:", headers[i])) {
-                        printf("ENTERED2\n");
+                    if (strstr("Content-Length:", headers[i]) != NULL) {
                         is_body = 1;
                         continue; /* next iteration */
                     }
