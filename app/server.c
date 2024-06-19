@@ -246,6 +246,8 @@ void get_file_endpoint (char *bufResponse, char *path, char *response) {
 
     filename[j] = '\0';
 
+    
+
     char *fileptr = filename;
     char *dirptr = dir;
     while (*dirptr != '\0')
@@ -253,6 +255,7 @@ void get_file_endpoint (char *bufResponse, char *path, char *response) {
     while (*fileptr != '\0')
         complete_path[t++] = *fileptr++;
 
+    printf("GET_DIR: %s\n", complete_path)
 
     //strcat(dir, filename);
     
@@ -293,7 +296,7 @@ void post_file_endpoint (char *bufResponse, char *path, char *response, char *bo
 
     //strcat(dir, filename);
 
-    printf("path: %s\n", complete_path);
+    printf("POST_DIR: %s\n", complete_path);
     
     if ((fd = open(complete_path, O_WRONLY | O_APPEND | O_CREAT, 0)) == -1) {
         printf("Error creating the file.\n");
