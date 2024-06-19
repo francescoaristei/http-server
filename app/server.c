@@ -275,7 +275,7 @@ void post_file_endpoint (char *bufResponse, char *path, char *response, char *bo
     
     if ((fd = open(dir, O_WRONLY | O_APPEND | O_CREAT, 0)) == -1) {
         printf("Error creating the file.\n");
-        sprintf(bufResponse, "HTTP/1.1 404 Not Found\r\n\r\n");
+        strcpy(bufResponse, "HTTP/1.1 404 Not Found\r\n\r\n");
         return;
     }
 
@@ -286,7 +286,6 @@ void post_file_endpoint (char *bufResponse, char *path, char *response, char *bo
 
     response[i] = '\0';
     strcpy(bufResponse, "HTTP/1.1 201 Created\r\n\r\n");
-    printf("AAA%s\n", bufResponse);
 }
 
 
