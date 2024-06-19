@@ -442,6 +442,7 @@ void response (int conn_fd) {
                 /* check content length */
                 for (int i = 0; i < header_count; i++) {
                     if (strstr("Content-Length:", headers[i]) != NULL) {
+                        printf("ENTERED\n");
                         is_body = 1;
                         continue; /* next iteration */
                     }
