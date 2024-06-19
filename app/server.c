@@ -294,7 +294,7 @@ void post_file_endpoint (char *bufResponse, char *path, char *response, char *bo
     while (*fileptr != '\0')
         complete_path[t++] = *fileptr++;
 
-    //strcat(dir, filename);
+    ///strcat(dir, filename);
 
     printf("POST_DIR: %s\n", complete_path);
     
