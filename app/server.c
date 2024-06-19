@@ -236,16 +236,27 @@ void get_file_endpoint (char *bufResponse, char *path, char *response) {
     int fd;
     char c;
     char filename[MAX_LINE];
-    int i = 0, j = 0;
+    int i = 0, j = 0, t = 0;
+
+    char complete_path[MAX_LINE];
 
     char *ptr = strchr(path, '/');
     while (*ptr != '\0')
-        filename[j++] = *++ptr;
+        filename[j++] = *ptr++;
 
     filename[j] = '\0';
-    strcat(dir, filename);
+
+    char *fileptr = filename;
+    char *dirptr = dir;
+    while (*dirptr != '\0')
+        complete_path[t++] = *dirptr++;
+    while (*fileptr != '\0')
+        complete_path[t++] = *fileptr++;
+
+
+    //strcat(dir, filename);
     
-    if ((fd = open(dir, O_RDONLY, 0)) == -1) {
+    if ((fd = open(complete_path, O_RDONLY, 0)) == -1) {
         printf("Error opening the file.\n");
         sprintf(bufResponse, "HTTP/1.1 404 Not Found\r\n\r\n");
         return;
@@ -262,25 +273,34 @@ void post_file_endpoint (char *bufResponse, char *path, char *response, char *bo
     int fd;
     char c;
     char filename[MAX_LINE];
-    int i = 0, j = 0, z = 0;
+
+    char complete_path[MAX_LINE];
+
+    int i = 0, j = 0, z = 0, t = 0;
 
     char *ptr = strchr(path, '/');
     while (*ptr != '\0')
-        filename[j++] = *++ptr;
+        filename[j++] = *ptr++;
 
     filename[j] = '\0';
-    strcat(dir, filename);
 
-    printf("BBB%s\n", dir);
+    char *fileptr = filename;
+    char *dirptr = dir;
+    while (*dirptr != '\0')
+        complete_path[t++] = *dirptr++;
+    while (*fileptr != '\0')
+        complete_path[t++] = *fileptr++;
+
+    //strcat(dir, filename);
     
-    if ((fd = open(dir, O_WRONLY | O_APPEND | O_CREAT, 0)) == -1) {
+    if ((fd = open(complete_path, O_WRONLY | O_APPEND | O_CREAT, 0)) == -1) {
         printf("Error creating the file.\n");
         strcpy(bufResponse, "HTTP/1.1 404 Not Found\r\n\r\n");
         return;
     }
 
     while (body[z] != '\0') {
-        write(fd, body[z], 1);
+        write(fd, &body[z], 1);
         response[i++] = body[z++];
     }
 
@@ -402,6 +422,8 @@ void response (int conn_fd) {
 	int total_read = 0;
     int is_header = 0;
     int header_count = 0;
+    size_t bufLength = MAX_LINE;
+    char bodyLength[MAX_LINE];
     //char string[MAX_LINE];
 
     sem_init(&files_mutex, 0, 1); // binary mutex (TO-DO: change in the reader-writer paradigm?)
@@ -409,7 +431,15 @@ void response (int conn_fd) {
 	while (1) {
 	    //n = rio_readlineb(&riot, bufRequest + total_read, MAX_LINE);
 		//n = rio_readnb(&riot, bufRequest + total_read, MAX_LINE);
-        n = rio_readlineb(&riot, bufRequest, MAX_LINE);
+
+        /* avoid blocking on read() */
+        if (is_body) {
+            sscanf(bodyLength, "%llu", &bufLength);
+            /* needed for rio_readlineb */
+            bufLength += 1;
+        }
+
+        n = rio_readlineb(&riot, bufRequest, bufLength);
 		if (n < 0) {
 			printf("Error reading...\n");
 			return 1;
@@ -444,6 +474,12 @@ void response (int conn_fd) {
                 /* check content length */
                 for (int i = 0; i < header_count; i++) {
                     if (strstr(headers[i], "Content-Length:") != NULL) {
+                        char *ptr = strchr(headers[i], ' ');
+                        int count = 0;
+                        /* body length */
+                        while (*ptr != '\r')
+                            bodyLength[count++] = *++ptr;
+                        bodyLength[count] = '\0';
                         is_body = 1;
                         break; /* exit for loop */
                     }
