@@ -443,12 +443,11 @@ void response (int conn_fd) {
                 for (int i = 0; i < header_count; i++) {
                     printf("%s\n", headers[i]);
                     if (strstr(headers[i], "Content-Length:") != NULL) {
-                        printf("ENTERED\n");
                         is_body = 1;
-                        continue; /* next iteration */
+                        break; /* exit for loop */
                     }
                 }
-                break; /* no body */
+                continue; /* no body */
             }
             strcpy(headers[header_count++], bufRequest);
             
