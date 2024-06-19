@@ -282,6 +282,8 @@ void post_file_endpoint (char *bufResponse, char *path, char *response, char *bo
         response[i++] = body[z++];
     }
 
+    printf("AAA%s\n", response);
+
     response[i] = '\0';
     sprintf(bufResponse, "HTTP/1.1 201 Created\r\n\r\n");
 }
@@ -484,7 +486,6 @@ void response (int conn_fd) {
             get_file_endpoint(bufResponse, path_ptr, response);
             sem_post(&files_mutex);
         } else if (strstr(path, "POST") != NULL) {
-            printf("ENTERED\n");
             char req_type[MAX_LINE];
             char req_length[MAX_LINE];
             for (int i = 0; i < header_count; i++) {
