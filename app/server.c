@@ -441,8 +441,7 @@ void response (int conn_fd) {
             if (strcmp(bufRequest, "\r\n") == 0) {
                 /* check content length */
                 for (int i = 0; i < header_count; i++) {
-                    if (strstr("Content-Length:", headers[i]) != NULL) {
-                        printf("ENTERED\n");
+                    if (strstr(headers[i], "Content-Length:") != NULL) {
                         is_body = 1;
                         continue; /* next iteration */
                     }
