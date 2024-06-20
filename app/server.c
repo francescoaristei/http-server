@@ -206,12 +206,12 @@ void echo_endpoint (char *bufResponse, char *ptr, char *response, char *encoding
     int j = 0;
     char type_encoding[MAX_LINE];
 
-    while (*ch != '\r')
+    while (*ch != '\r') {
         type_encoding[j++] = *++ch;
+        printf("%c\n", *ch);
+    }
     
     type_encoding[j] = '\0';
-
-    printf("%s\n", type_encoding);
 
     int len = strlen("echo");
     ptr += len;
