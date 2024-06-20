@@ -201,6 +201,8 @@ void find_path (char *path, char *string) {
 
 /* echo endpoint */
 void echo_endpoint (char *bufResponse, char *ptr, char *response, char *encoding) {
+
+    printf("AAA: %s\n", encoding);
     char *ch = strchr(encoding, ' ');
     int j = 0;
     char type_encoding[MAX_LINE];
@@ -218,8 +220,6 @@ void echo_endpoint (char *bufResponse, char *ptr, char *response, char *encoding
     }
 
     response[i--] = '\0';
-
-    printf("AAA: %s\n", type_encoding);
 
     if (strcmp(type_encoding, "gzip") == 0) {
         // HERE METHOD TO ENCODE response
