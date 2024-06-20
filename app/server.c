@@ -211,6 +211,8 @@ void echo_endpoint (char *bufResponse, char *ptr, char *response, char *encoding
     
     type_encoding[j] = '\0';
 
+    printf("%s\n", type_encoding);
+
     int len = strlen("echo");
     ptr += len;
     int i;
