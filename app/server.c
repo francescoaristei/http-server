@@ -261,7 +261,7 @@ void echo_endpoint (char *bufResponse, char *ptr, char *response, char *encoding
         }
         
         if (strcmp(type_encoding, "gzip") == 0) {
-            char compressed[MAX_LINE];
+            char *compressed = (char*) calloc(MAX_LINE, sizeof(char));
             size_t compressed_length = sizeof(compressed);
             if (gzip(response, sizeof(response), compressed, &compressed_length) == Z_OK) {
                 sprintf(bufResponse, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Encoding: gzip\r\nContent-Length: %zu\r\n\r\n", i);
