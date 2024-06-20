@@ -202,7 +202,6 @@ void find_path (char *path, char *string) {
 /* echo endpoint */
 void echo_endpoint (char *bufResponse, char *ptr, char *response, char *encoding) {
 
-    printf("AAA: %s\n", encoding);
     char *ch = strchr(encoding, ' ');
     int j = 0;
     char type_encoding[MAX_LINE];
@@ -211,6 +210,8 @@ void echo_endpoint (char *bufResponse, char *ptr, char *response, char *encoding
         type_encoding[j++] = ++*ch;
     
     type_encoding[j] = '\0';
+
+    printf("%s\n", type_encoding);
 
     int len = strlen("echo");
     ptr += len;
