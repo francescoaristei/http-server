@@ -13,6 +13,7 @@
 
 # define BUF_SIZE 512
 # define MAX_LINE 256
+# define PATH 64
 # define HEADERS 8
 # define WORKER_THREADS 4
 # define SBUFSIZE 16
@@ -215,7 +216,11 @@ void echo_endpoint (char *bufResponse, char *ptr, char *response, char *encoding
         char type_encoding[MAX_LINE];
 
         while (*ch != '\r') {
-            type_encoding[j++] = *++ch;
+            while (*ch != ',')
+                type_encoding[j++] = *++ch;
+            if (strcmp(type_encoding, "gzip") == 0)
+                break;
+            j = 0;
         }
         
         type_encoding[--j] = '\0';
@@ -253,10 +258,10 @@ char *dir;
 void get_file_endpoint (char *bufResponse, char *path, char *response) {
     int fd;
     char c;
-    char filename[MAX_LINE];
+    char filename[PATH];
     int i = 0, j = 0, t = 0;
 
-    char complete_path[MAX_LINE];
+    char complete_path[PATH];
 
     char *ptr = strchr(path, '/');
     while (*ptr != '\0')
@@ -293,9 +298,9 @@ void get_file_endpoint (char *bufResponse, char *path, char *response) {
 void post_file_endpoint (char *bufResponse, char *path, char *response, char *body, char *req_type, char *req_length) {
     int fd;
     char c;
-    char filename[MAX_LINE];
+    char filename[PATH];
 
-    char complete_path[MAX_LINE];
+    char complete_path[PATH];
 
     int i = 0, j = 0, z = 0, t = 0;
 
@@ -434,10 +439,10 @@ void response (int conn_fd) {
     char bufRequest[MAX_LINE];
     char bufResponse[MAX_LINE];
     char body[MAX_LINE];
-    char path[MAX_LINE];
+    char path[PATH];
     char headers[HEADERS][MAX_LINE];
     char response[MAX_LINE];
-    char true_path[MAX_LINE];
+    char true_path[PATH];
 
     /* initialize internal buffer to read from conn_fd */
     rio_init(&riot, conn_fd);
@@ -521,24 +526,20 @@ void response (int conn_fd) {
     char *path_ptr;
 
     if ((path_ptr = strstr(true_path, "echo")) != NULL) {
-        //char encoding[MAX_LINE];
         char *enc;
         for (int i = 0; i < header_count; i++) {
             if ((enc = strstr(headers[i], "Accept-Encoding")) != NULL) {
-                //strcpy(encoding, headers[i]);
                 break;
             }
         }
-        //if (enc != NULL)
-        //echo_endpoint(bufResponse, path_ptr, response, encoding);
         echo_endpoint(bufResponse, path_ptr, response, enc);
         
 
     } else if ((path_ptr = strstr(true_path, "user-agent")) != NULL) {
-        char user_agent[MAX_LINE];
+        char *user_agent;
         for (int i = 0; i < header_count; i++) {
-            if (strstr(headers[i], "User-Agent") != NULL)
-                strcpy(user_agent, headers[i]);
+            if ((user_agent = strstr(headers[i], "User-Agent")) != NULL)
+                break;
         }
         useragent_endpoint(bufResponse, user_agent, response);
 
@@ -548,14 +549,16 @@ void response (int conn_fd) {
             get_file_endpoint(bufResponse, path_ptr, response);
             sem_post(&files_mutex);
         } else if (strstr(path, "POST") != NULL) {
-            char req_type[MAX_LINE];
-            char req_length[MAX_LINE];
+            char *req_type;
+            char *req_length;
             for (int i = 0; i < header_count; i++) {
-                if (strstr(headers[i], "Content-Type") != NULL) {
-                    strcpy(req_type, headers[i]);
+                if ((req_type = strstr(headers[i], "Content-Type")) != NULL) {
+                    break;
                 }
-                if (strstr(headers[i], "Content-Length") != NULL) {
-                    strcpy(req_length, headers[i]);
+            }
+            for (int i = 0; i < header_count; i++) {
+                if ((req_length = strstr(headers[i], "Content-Length")) != NULL) {
+                    break;
                 }
             }
             sem_wait(&files_mutex);
