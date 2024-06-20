@@ -206,7 +206,7 @@ void echo_endpoint (char *bufResponse, char *ptr, char *response, char *encoding
     int j = 0;
     char type_encoding[MAX_LINE];
 
-    while (*ch != '\0')
+    while (*ch != '\r')
         type_encoding[j++] = ++*ch;
     
     type_encoding[j] = '\0';
