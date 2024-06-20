@@ -11,8 +11,6 @@
 # include <unistd.h>
 # include <zlib.h>
 
-# include <zconf.h>
-
 # define BUF_SIZE 512
 # define MAX_LINE 256
 # define PATH 64
@@ -210,8 +208,7 @@ int gzip (char *input, size_t input_len, char *output, size_t *output_len) {
     stream.opaque = Z_NULL;
 
     /* initialize zlib stream for compression */
-    ret = deflateInit2(&stream, Z_DEFAULT_COMPRESSION, Z_DEFLATED, 0x1F, 8,
-               Z_DEFAULT_STRATEGY);
+    ret = deflateInit2(&stream, Z_DEFAULT_COMPRESSION, Z_DEFLATED, 15 | 16, 8, Z_DEFAULT_STRATEGY);
 
     if (ret != Z_OK) {
         return ret;
