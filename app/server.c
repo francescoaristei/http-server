@@ -5,7 +5,6 @@
 # include <netinet/ip.h>
 # include <string.h>
 # include <errno.h>
-# include <unistd.h>
 # include <semaphore.h>
 # include <pthread.h>
 # include <fcntl.h>
@@ -201,7 +200,16 @@ void find_path (char *path, char *string) {
 
 
 /* echo endpoint */
-void echo_endpoint (char *bufResponse, char *ptr, char *response) {
+void echo_endpoint (char *bufResponse, char *ptr, char *response, char *encoding) {
+    char *ch = strchr(encoding, ' ');
+    int j = 0;
+    char type_encoding[MAX_LINE];
+
+    while (*ch != '\0')
+        type_encoding[j++] = ++*ch;
+    
+    type_encoding[j] = '\0';
+
     int len = strlen("echo");
     ptr += len;
     int i;
@@ -211,7 +219,15 @@ void echo_endpoint (char *bufResponse, char *ptr, char *response) {
 
     response[i--] = '\0';
 
-    sprintf(bufResponse, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s", i, response);
+    if (strcmp(type_encoding, "gzip")) {
+        // HERE METHOD TO ENCODE response
+        sprintf(bufResponse, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Encoding: gzip\r\nContent-Length: %d\r\n\r\n%s", i, response);
+    }
+    else {
+        // HERE METHOD TO ENCODE response
+        sprintf(bufResponse, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s", i, response);
+    }
+    
     printf("%s\n", bufResponse);
 }
 
@@ -252,12 +268,7 @@ void get_file_endpoint (char *bufResponse, char *path, char *response) {
         complete_path[t++] = *dirptr++;
     while (*fileptr != '\0')
         complete_path[t++] = *fileptr++;
-
     complete_path[t] = '\0';
-
-    printf("GET_DIR: %s\n", complete_path);
-
-    //strcat(dir, filename);
     
     if ((fd = open(complete_path, O_RDONLY, 0)) == -1) {
         printf("Error opening the file.\n");
@@ -268,6 +279,11 @@ void get_file_endpoint (char *bufResponse, char *path, char *response) {
         response[i++] = c;
 
     response[i] = '\0';
+
+    if (close(fd) == -1) {
+        printf("Error closing file.\n");
+        return 1;
+    }
     sprintf(bufResponse, "HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: %d\r\n\r\n%s", i, response);
 }
 
@@ -293,12 +309,7 @@ void post_file_endpoint (char *bufResponse, char *path, char *response, char *bo
         complete_path[t++] = *dirptr++;
     while (*fileptr != '\0')
         complete_path[t++] = *fileptr++;
-
     complete_path[t] = '\0';
-
-    ///strcat(dir, filename);
-
-    printf("POST_DIR: %s\n", complete_path);
     
     if ((fd = open(complete_path, O_WRONLY | O_APPEND | O_CREAT, 0)) == -1) {
         printf("Error creating the file.\n");
@@ -312,6 +323,12 @@ void post_file_endpoint (char *bufResponse, char *path, char *response, char *bo
     }
 
     response[i] = '\0';
+
+    if (close(fd) == -1) {
+        printf("Error closing file.\n");
+        return 1;
+    }
+
     strcpy(bufResponse, "HTTP/1.1 201 Created\r\n\r\n");
 }
 
@@ -431,14 +448,10 @@ void response (int conn_fd) {
     int header_count = 0;
     size_t bufLength = MAX_LINE;
     char bodyLength[MAX_LINE];
-    //char string[MAX_LINE];
 
     sem_init(&files_mutex, 0, 1); // binary mutex (TO-DO: change in the reader-writer paradigm?)
 
 	while (1) {
-	    //n = rio_readlineb(&riot, bufRequest + total_read, MAX_LINE);
-		//n = rio_readnb(&riot, bufRequest + total_read, MAX_LINE);
-
         /* avoid blocking on read() */
         if (is_body) {
             sscanf(bodyLength, "%llu", &bufLength);
@@ -456,16 +469,9 @@ void response (int conn_fd) {
         if (n == 0) {
         }
 
-        //bufRequest[total_read + n] = '\0';
         bufRequest[n] = '\0';
 
-        /*for (int i = total_read; i <= total_read + n; i++) {
-            string[i - total_read] = bufRequest[i];
-        }*/
 
-
-		//total_read += n;
-		//bufRequest[total_read] = '\0';
         /* path */
         if (!is_header) {
             strcpy(path, bufRequest);
@@ -513,7 +519,12 @@ void response (int conn_fd) {
     char *path_ptr;
 
     if ((path_ptr = strstr(true_path, "echo")) != NULL) {
-        echo_endpoint(bufResponse, path_ptr, response);
+        char encoding[MAX_LINE];
+        for (int i = 0; i < header_count; i++) {
+            if (strstr(headers[i], "Accept-Encoding") != NULL)
+                strcpy(encoding, headers[i]);
+        }
+        echo_endpoint(bufResponse, path_ptr, response, encoding);
 
     } else if ((path_ptr = strstr(true_path, "user-agent")) != NULL) {
         char user_agent[MAX_LINE];
