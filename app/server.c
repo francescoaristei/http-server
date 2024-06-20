@@ -221,7 +221,7 @@ void echo_endpoint (char *bufResponse, char *ptr, char *response, char *encoding
             type_encoding[j] = '\0';
             printf("AA: %s\n", type_encoding);
             if (strcmp(type_encoding, "gzip") == 0)
-                break;
+                break;//
             j = 0;
         }
         
