@@ -201,17 +201,6 @@ void find_path (char *path, char *string) {
 
 /* echo endpoint */
 void echo_endpoint (char *bufResponse, char *ptr, char *response, char *encoding) {
-
-    char *ch = strchr(encoding, ' ');
-    int j = 0;
-    char type_encoding[MAX_LINE];
-
-    while (*ch != '\r') {
-        type_encoding[j++] = *++ch;
-    }
-    
-    type_encoding[--j] = '\0';
-
     int len = strlen("echo");
     ptr += len;
     int i;
@@ -219,14 +208,25 @@ void echo_endpoint (char *bufResponse, char *ptr, char *response, char *encoding
         response[i] = *++ptr;
     }
 
-    response[i--] = '\0'; //
+    response[i--] = '\0';
+    if (encoding != NULL) {
+        char *ch = strchr(encoding, ' ');
+        int j = 0;
+        char type_encoding[MAX_LINE];
 
-    if (strcmp(type_encoding, "gzip") == 0) {
-        // HERE METHOD TO ENCODE response
-        sprintf(bufResponse, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Encoding: gzip\r\nContent-Length: %d\r\n\r\n%s", i, response);
+        while (*ch != '\r') {
+            type_encoding[j++] = *++ch;
+        }
+        
+        type_encoding[--j] = '\0';
+        if (strcmp(type_encoding, "gzip") == 0) {
+            // HERE METHOD TO ENCODE response
+            sprintf(bufResponse, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Encoding: gzip\r\nContent-Length: %d\r\n\r\n%s", i, response);
+        } else {
+            sprintf(bufResponse, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s", i, response);
+        }
     }
     else {
-        // HERE METHOD TO ENCODE response
         sprintf(bufResponse, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s", i, response);
     }
     
@@ -521,12 +521,18 @@ void response (int conn_fd) {
     char *path_ptr;
 
     if ((path_ptr = strstr(true_path, "echo")) != NULL) {
-        char encoding[MAX_LINE];
+        //char encoding[MAX_LINE];
+        char *enc;
         for (int i = 0; i < header_count; i++) {
-            if (strstr(headers[i], "Accept-Encoding") != NULL)
-                strcpy(encoding, headers[i]);
+            if ((enc = strstr(headers[i], "Accept-Encoding")) != NULL) {
+                //strcpy(encoding, headers[i]);
+                break;
+            }
         }
-        echo_endpoint(bufResponse, path_ptr, response, encoding);
+        //if (enc != NULL)
+        //echo_endpoint(bufResponse, path_ptr, response, encoding);
+        echo_endpoint(bufResponse, path_ptr, response, enc);
+        
 
     } else if ((path_ptr = strstr(true_path, "user-agent")) != NULL) {
         char user_agent[MAX_LINE];
