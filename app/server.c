@@ -219,7 +219,7 @@ void echo_endpoint (char *bufResponse, char *ptr, char *response, char *encoding
         response[i] = *++ptr;
     }
 
-    response[i--] = '\0';
+    response[i--] = '\0'; //
 
     if (strcmp(type_encoding, "gzip") == 0) {
         // HERE METHOD TO ENCODE response
