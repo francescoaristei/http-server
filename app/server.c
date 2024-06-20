@@ -203,12 +203,11 @@ void find_path (char *path, char *string) {
 void echo_endpoint (char *bufResponse, char *ptr, char *response, char *encoding) {
 
     char *ch = strchr(encoding, ' ');
-    printf("%c\n", *(ch+1));
     int j = 0;
     char type_encoding[MAX_LINE];
 
     while (*ch != '\r')
-        type_encoding[j++] = ++*ch;
+        type_encoding[j++] = *++ch;
     
     type_encoding[j] = '\0';
 
