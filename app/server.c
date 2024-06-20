@@ -208,7 +208,7 @@ int gzip (char *input, size_t input_len, char *output, size_t *output_len) {
     stream.opaque = Z_NULL;
 
     /* initialize zlib stream for compression */
-    ret = deflateInit2(&stream, Z_DEFAULT_COMPRESSION, Z_DEFLATED, 15 | 16, 8, Z_DEFAULT_STRATEGY);
+    ret = deflateInit(&stream, Z_DEFAULT_COMPRESSION);
 
     if (ret != Z_OK) {
         return ret;
@@ -264,7 +264,7 @@ void echo_endpoint (char *bufResponse, char *ptr, char *response, char *encoding
             char compressed[MAX_LINE];
             size_t compressed_length = sizeof(compressed);
             gzip(response, sizeof(response), compressed, &compressed_length);
-            sprintf(bufResponse, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Encoding: gzip\r\nContent-Length: %d\r\n\r\n%s", compressed_length, compressed);
+            sprintf(bufResponse, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Encoding: gzip\r\nContent-Length: %zu\r\n\r\n%s", compressed_length, compressed);
         } else {
             sprintf(bufResponse, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s", i, response);
         }
