@@ -202,8 +202,8 @@ void find_path (char *path, char *string) {
 /* echo endpoint */
 void echo_endpoint (char *bufResponse, char *ptr, char *response, char *encoding) {
 
-    printf("%s\n", encoding);
     char *ch = strchr(encoding, ' ');
+    printf("%c\n", *(ch+1));
     int j = 0;
     char type_encoding[MAX_LINE];
 
