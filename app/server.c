@@ -231,6 +231,8 @@ int gzip (char *input, size_t input_len, char *output, size_t *output_len) {
 
     /* clean up */
     deflateEnd(&stream);
+
+    printf("ENTERED\n");
     return Z_OK;
 }
 
