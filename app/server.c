@@ -9,7 +9,7 @@
 # include <pthread.h>
 # include <fcntl.h>
 # include <unistd.h>
-
+# include <zlib.h>
 
 # define BUF_SIZE 512
 # define MAX_LINE 256
@@ -199,6 +199,41 @@ void find_path (char *path, char *string) {
     }
 }
 
+int gzip (char *input, size_t input_len, char *output, size_t *output_len) {
+    int ret;
+    z_stream stream;
+
+    stream.zalloc = Z_NULL;
+    stream.zfree = Z_NULL;
+    stream.opaque = Z_NULL;
+
+    /* initialize zlib stream for compression */
+    ret = deflateInit(&stream, Z_DEFAULT_COMPRESSION);
+
+    if (ret != Z_OK) {
+        return ret;
+    }
+
+    /* set input and output */
+    stream.avail_in = input_len;
+    stream.next_in = (unsigned char*)input;
+    stream.avail_out = output_len;
+    stream.next_out = (unsigned char*)output;
+
+    /* compress */
+    ret = deflate(&stream, Z_FINISH);
+    if (ret != Z_STREAM_END) {
+        deflateEnd(&stream);
+        return ret == Z_OK ? Z_BUF_ERROR : ret;
+    }
+
+    *output_len = stream.total_out;
+
+    /* clean up */
+    deflateEnd(&stream);
+    return Z_OK;
+}
+
 
 /* echo endpoint */
 void echo_endpoint (char *bufResponse, char *ptr, char *response, char *encoding) {
@@ -219,7 +254,6 @@ void echo_endpoint (char *bufResponse, char *ptr, char *response, char *encoding
             while (*++ch != ',' && *ch != '\r')
                 if (*ch != ' ') type_encoding[j++] = *ch;
             type_encoding[j] = '\0';
-            printf("AA: %s\n", type_encoding);
             if (strcmp(type_encoding, "gzip") == 0)
                 break;
             j = 0;
@@ -227,8 +261,10 @@ void echo_endpoint (char *bufResponse, char *ptr, char *response, char *encoding
         
         
         if (strcmp(type_encoding, "gzip") == 0) {
-            // HERE METHOD TO ENCODE response
-            sprintf(bufResponse, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Encoding: gzip\r\nContent-Length: %d\r\n\r\n%s", i, response);
+            char compressed[MAX_LINE];
+            size_t compressed_length = sizeof(compressed);
+            gzip(response, sizeof(response), compressed, &compressed_length);
+            sprintf(bufResponse, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Encoding: gzip\r\nContent-Length: %d\r\n\r\n%s", compressed_length, compressed);
         } else {
             sprintf(bufResponse, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s", i, response);
         }
@@ -236,8 +272,6 @@ void echo_endpoint (char *bufResponse, char *ptr, char *response, char *encoding
     else {
         sprintf(bufResponse, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s", i, response);
     }
-    
-    printf("%s\n", bufResponse);
 }
 
 
@@ -251,7 +285,6 @@ void useragent_endpoint (char *bufResponse, char *useragent, char *response) {
     response[i--] = '\0';
 
     sprintf(bufResponse, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s", i, response);
-    printf("%s\n", bufResponse);
 }
 
 
