@@ -218,13 +218,14 @@ void echo_endpoint (char *bufResponse, char *ptr, char *response, char *encoding
         while (*ch != '\r') {
             while (*++ch != ',')
                 type_encoding[j++] = *ch;
+            type_encoding[j] = '\0';
             printf("AA: %s\n", type_encoding);
             if (strcmp(type_encoding, "gzip") == 0)
                 break;
             j = 0;
         }
         
-        type_encoding[--j] = '\0';
+        
         if (strcmp(type_encoding, "gzip") == 0) {
             // HERE METHOD TO ENCODE response
             sprintf(bufResponse, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Encoding: gzip\r\nContent-Length: %d\r\n\r\n%s", i, response);
