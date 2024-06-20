@@ -237,7 +237,7 @@ int gzip (char *input, size_t input_len, char *output, size_t *output_len) {
 
 
 /* echo endpoint */
-void echo_endpoint (char *bufResponse, char *ptr, char *response, char *encoding) {
+void echo_endpoint (char *bufResponse, char *ptr, char *response, char *encoding, int *resp_len) {
     int len = strlen("echo");
     ptr += len;
     int i;
@@ -264,8 +264,9 @@ void echo_endpoint (char *bufResponse, char *ptr, char *response, char *encoding
             char *compressed = (char*) calloc(MAX_LINE, sizeof(char));
             size_t compressed_length = sizeof(compressed);
             if (gzip(response, sizeof(response), compressed, &compressed_length) == Z_OK) {
-                sprintf(bufResponse, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Encoding: gzip\r\nContent-Length: %zu\r\n\r\n", i);
+                sprintf(bufResponse, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Encoding: gzip\r\nContent-Length: %zu\r\n\r\n", compressed_length);
                 memcpy(bufResponse + strlen(bufResponse), compressed, compressed_length);
+                *resp_len = strlen(bufResponse) + compressed_length;
             }
         } else {
             sprintf(bufResponse, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s", i, response);
@@ -561,6 +562,7 @@ void response (int conn_fd) {
 
     find_path(path, true_path);
     char *path_ptr;
+    int resp_len;
 
     if ((path_ptr = strstr(true_path, "echo")) != NULL) {
         char *enc;
@@ -569,7 +571,7 @@ void response (int conn_fd) {
                 break;
             }
         }
-        echo_endpoint(bufResponse, path_ptr, response, enc);
+        echo_endpoint(bufResponse, path_ptr, response, enc, &resp_len);
         
 
     } else if ((path_ptr = strstr(true_path, "user-agent")) != NULL) {
@@ -579,11 +581,13 @@ void response (int conn_fd) {
                 break;
         }
         useragent_endpoint(bufResponse, user_agent, response);
+        resp_len = strlen(bufResponse);
 
     } else if ((path_ptr = strstr(true_path, "files")) != NULL) {
         if (strstr(path, "GET") != NULL) {
             sem_wait(&files_mutex);
             get_file_endpoint(bufResponse, path_ptr, response);
+            resp_len = strlen(bufResponse);
             sem_post(&files_mutex);
         } else if (strstr(path, "POST") != NULL) {
             char *req_type;
@@ -600,6 +604,7 @@ void response (int conn_fd) {
             }
             sem_wait(&files_mutex);
             post_file_endpoint(bufResponse, path_ptr, response, body, req_type, req_length);
+            resp_len = strlen(bufResponse);
             sem_post(&files_mutex);
         }
     } else {
@@ -609,6 +614,7 @@ void response (int conn_fd) {
         else {
             strcpy(bufResponse, "HTTP/1.1 404 Not Found\r\n\r\n");
         }
+        resp_len = strlen(bufResponse);
     }
-    ssize_t nres = rio_writen(conn_fd, bufResponse, strlen(bufResponse));
+    ssize_t nres = rio_writen(conn_fd, bufResponse, resp_len);
 }
