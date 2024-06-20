@@ -216,12 +216,12 @@ void echo_endpoint (char *bufResponse, char *ptr, char *response, char *encoding
         char type_encoding[MAX_LINE];
 
         while (*ch != '\r') {
-            while (*++ch != ',')
+            while (*++ch != ',' && *ch != '\r')
                 if (*ch != ' ') type_encoding[j++] = *ch;
             type_encoding[j] = '\0';
             printf("AA: %s\n", type_encoding);
             if (strcmp(type_encoding, "gzip") == 0)
-                break;//
+                break;
             j = 0;
         }
         
