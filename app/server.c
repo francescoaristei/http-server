@@ -244,7 +244,7 @@ void echo_endpoint (char *bufResponse, char *ptr, char *response, char *encoding
     for (i = 0; *ptr != '\0'; i++) {
         response[i] = *++ptr;
     }
-    response[i--] = '\0';
+    response[i] = '\0';
 
     if (encoding != NULL) {
         char *ch = strchr(encoding, ' ');
