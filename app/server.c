@@ -266,6 +266,7 @@ void echo_endpoint (char *bufResponse, char *ptr, char *response, char *encoding
             if (gzip(response, sizeof(response), compressed, &compressed_length) == Z_OK) {
                 sprintf(bufResponse, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Encoding: gzip\r\nContent-Length: %zu\r\n\r\n", compressed_length);
                 memcpy(bufResponse + strlen(bufResponse), compressed, compressed_length);
+                printf("AAA: %s\n", bufResponse);
                 *resp_len = strlen(bufResponse) + compressed_length;
             }
         } else {
