@@ -208,8 +208,8 @@ void echo_endpoint (char *bufResponse, char *ptr, char *response, char *encoding
     for (i = 0; *ptr != '\0'; i++) {
         response[i] = *++ptr;
     }
-
     response[i--] = '\0';
+
     if (encoding != NULL) {
         char *ch = strchr(encoding, ' ');
         int j = 0;
@@ -218,6 +218,7 @@ void echo_endpoint (char *bufResponse, char *ptr, char *response, char *encoding
         while (*ch != '\r') {
             while (*ch != ',')
                 type_encoding[j++] = *++ch;
+            printf("AA: %s\n", type_encoding);
             if (strcmp(type_encoding, "gzip") == 0)
                 break;
             j = 0;
