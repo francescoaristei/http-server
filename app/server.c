@@ -208,7 +208,6 @@ void echo_endpoint (char *bufResponse, char *ptr, char *response, char *encoding
 
     while (*ch != '\r') {
         type_encoding[j++] = *++ch;
-        printf("%c\n", *ch);
     }
     
     type_encoding[j] = '\0';
@@ -220,7 +219,7 @@ void echo_endpoint (char *bufResponse, char *ptr, char *response, char *encoding
         response[i] = *++ptr;
     }
 
-    response[i--] = '\0';
+    response[--i] = '\0';
 
     if (strcmp(type_encoding, "gzip") == 0) {
         // HERE METHOD TO ENCODE response
