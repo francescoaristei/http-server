@@ -217,7 +217,7 @@ int gzip (char *input, size_t input_len, char *output, size_t *output_len) {
     /* set input and output */
     stream.avail_in = input_len;
     stream.next_in = (unsigned char*)input;
-    stream.avail_out = output_len;
+    stream.avail_out = *output_len;
     stream.next_out = (unsigned char*)output;
 
     /* compress */
@@ -266,7 +266,6 @@ void echo_endpoint (char *bufResponse, char *ptr, char *response, char *encoding
             if (gzip(response, sizeof(response), compressed, &compressed_length) == Z_OK) {
                 sprintf(bufResponse, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Encoding: gzip\r\nContent-Length: %zu\r\n\r\n", compressed_length);
                 memcpy(bufResponse + strlen(bufResponse), compressed, compressed_length);
-                printf("AAA: %s\n", bufResponse);
                 *resp_len = strlen(bufResponse) + compressed_length;
             }
         } else {
