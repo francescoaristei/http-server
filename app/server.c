@@ -573,8 +573,6 @@ void response (int conn_fd) {
             }
         }
         echo_endpoint(bufResponse, path_ptr, response, enc, &resp_len);
-        send(conn_fd, bufResponse, resp_len, 0);
-        return;
 
     } else if ((path_ptr = strstr(true_path, "user-agent")) != NULL) {
         char *user_agent;
@@ -615,7 +613,7 @@ void response (int conn_fd) {
         }
         else {
             strcpy(bufResponse, "HTTP/1.1 404 Not Found\r\n\r\n");
-        }
+        }//
         resp_len = strlen(bufResponse);
     }
     ssize_t nres = rio_writen(conn_fd, bufResponse, resp_len);
