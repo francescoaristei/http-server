@@ -272,10 +272,12 @@ void echo_endpoint (char *bufResponse, char *ptr, char *response, char *encoding
             }
         } else {
             sprintf(bufResponse, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s", i, response);
+            *resp_len = strlen(bufResponse);
         }
     }
     else {
         sprintf(bufResponse, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s", i, response);
+        *resp_len = strlen(bufResponse);
     }
 }
 
