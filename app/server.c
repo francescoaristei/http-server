@@ -237,7 +237,7 @@ int gzip (char *input, size_t input_len, char *output, size_t *output_len) {
 
 
 /* echo endpoint */
-void echo_endpoint (char *bufResponse, char *ptr, char *response, char *encoding, int *resp_len) {
+void echo_endpoint (char *bufResponse, char *ptr, char *response, char *encoding, int *resp_len, char *compressed) {
     int len = strlen("echo");
     ptr += len;
     int i;
@@ -261,13 +261,14 @@ void echo_endpoint (char *bufResponse, char *ptr, char *response, char *encoding
         }
         
         if (strcmp(type_encoding, "gzip") == 0) {
-            char compressed[MAX_LINE];
+            //char compressed[MAX_LINE];
             size_t compressed_length = sizeof(compressed);
             size_t response_length = strlen(response);
             if (gzip(response, response_length, compressed, &compressed_length) == Z_OK) {
                 sprintf(bufResponse, "HTTP/1.1 200 OK\r\nContent-Encoding: gzip\r\nContent-Type: text/plain\r\nContent-Length: %zu\r\n\r\n", compressed_length);
-                memcpy(bufResponse + strlen(bufResponse), compressed, compressed_length);
-                *resp_len = strlen(bufResponse) + compressed_length;
+                //memcpy(bufResponse + strlen(bufResponse), compressed, compressed_length);
+                //*resp_len = strlen(bufResponse) + compressed_length;
+                *resp_len = strlen(bufResponse);
             }
         } else {
             sprintf(bufResponse, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s", i, response);
@@ -483,6 +484,8 @@ void response (int conn_fd) {
     char response[MAX_LINE];
     char true_path[PATH];
 
+    char compressed[MAX_LINE];
+
     /* initialize internal buffer to read from conn_fd */
     rio_init(&riot, conn_fd);
     
@@ -572,7 +575,7 @@ void response (int conn_fd) {
                 break;
             }
         }
-        echo_endpoint(bufResponse, path_ptr, response, enc, &resp_len);
+        echo_endpoint(bufResponse, path_ptr, response, enc, &resp_len, compressed);
         
 
     } else if ((path_ptr = strstr(true_path, "user-agent")) != NULL) {
@@ -618,4 +621,5 @@ void response (int conn_fd) {
         resp_len = strlen(bufResponse);
     }
     ssize_t nres = rio_writen(conn_fd, bufResponse, resp_len);
+    ssize_t cres = rio_writen(conn_fd, compressed, strlen(compressed));
 }
