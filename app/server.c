@@ -573,6 +573,8 @@ void response (int conn_fd) {
             }
         }
         echo_endpoint(bufResponse, path_ptr, response, enc, &resp_len);
+        if (enc != NULL)
+            send(conn_fd, bufResponse, resp_len, 0);
 
     } else if ((path_ptr = strstr(true_path, "user-agent")) != NULL) {
         char *user_agent;
