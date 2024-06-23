@@ -1,38 +1,28 @@
-[![progress-banner](https://backend.codecrafters.io/progress/http-server/3869c82a-46bb-4d55-bab0-7e2c9b649558)](https://app.codecrafters.io/users/codecrafters-bot?r=2qF)
-
-This is a starting point for C solutions to the
-["Build Your Own HTTP server" Challenge](https://app.codecrafters.io/courses/http-server/overview).
+## HTTP Server
 
 [HTTP](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol) is the
-protocol that powers the web. In this challenge, you'll build a HTTP/1.1 server
-that is capable of serving multiple clients.
+protocol that powers the web.
 
-Along the way you'll learn about TCP servers,
-[HTTP request syntax](https://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html),
-and more.
 
-**Note**: If you're viewing this repo on GitHub, head over to
-[codecrafters.io](https://codecrafters.io) to try the challenge.
+Basic multithreaded HTTP server handling simple GET and POST requests.
+GET:
+   - GET /files/: Serves files from the specified directory.
+   - GET /echo/: Echoes the message back to the client. If request header contains: Accept-Encoding: gzip the echoed message is compressed using the gzip compression algorithm from the  [zlib library](https://www.zlib.net/).
+   - GET /user-agent: Returns the user-agent string sent by the client.
 
-# Passing the first stage
+POST:
+   - POST /files/: Saves the request body to a file in the specified directory.
 
-The entry point for your HTTP server implementation is in `app/server.c`. Study
-and uncomment the relevant code, and push your changes to pass the first stage:
+Each client connection is handled by a different thread from a threads pool using the Producer-Consumer pattern.
 
-```sh
-git add .
-git commit -m "pass 1st stage" # any msg
-git push origin master
-```
+### Compiling and Testing
 
-Time to move on to the next stage!
+To compile the server: gcc -o server app/server.c -pthread -lz
 
-# Stage 2 & beyond
+Some example of testing:
 
-Note: This section is for stages 2 and beyond.
+- GET Request to Echo Message: curl http://localhost:4221/echo/Hello
 
-1. Ensure you have `gcc` installed locally
-1. Run `./your_server.sh` to run your program, which is implemented in
-   `app/server.c`.
-1. Commit your changes and run `git push origin master` to submit your solution
-   to CodeCrafters. Test output will be streamed to your terminal.
+- POST Request to Save Data to data.txt: curl -X POST -d "here-the-data" http://localhost:4221/files/data.txt
+
+- GET User-Agent: curl http://localhost:4221/user-agent

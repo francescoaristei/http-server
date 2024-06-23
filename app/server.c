@@ -208,7 +208,6 @@ int gzip (char *input, size_t input_len, char *output, size_t *output_len) {
     stream.opaque = Z_NULL;
 
     /* initialize zlib stream for compression */
-    //ret = deflateInit(&stream, Z_DEFAULT_COMPRESSION);
     ret = deflateInit2(&stream, Z_DEFAULT_COMPRESSION, Z_DEFLATED, 0x1F, 8, Z_DEFAULT_STRATEGY);
 
     if (ret != Z_OK) {
@@ -577,6 +576,7 @@ void response (int conn_fd) {
         }
         echo_endpoint(bufResponse, path_ptr, response, enc, &resp_len);
         if (enc != NULL)
+            /* write gives gzip:invalid header */
             send(conn_fd, bufResponse, resp_len, 0);
 
     } else if ((path_ptr = strstr(true_path, "user-agent")) != NULL) {
