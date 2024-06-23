@@ -237,7 +237,7 @@ int gzip (char *input, size_t input_len, char *output, size_t *output_len) {
 
 
 /* echo endpoint */
-void echo_endpoint (char *bufResponse, char *ptr, char *response, char *encoding, int *resp_len) {
+void echo_endpoint (char *bufResponse, char *ptr, char *response, char *encoding, int *resp_len, char *compressed, int *compressed_len) {
     int len = strlen("echo");
     ptr += len;
     int i;
@@ -261,13 +261,14 @@ void echo_endpoint (char *bufResponse, char *ptr, char *response, char *encoding
         }
         
         if (strcmp(type_encoding, "gzip") == 0) {
-            char compressed[MAX_LINE];
-            size_t compressed_length = sizeof(compressed);
+            //char compressed[MAX_LINE];
+            //size_t compressed_length = sizeof(compressed);
             size_t response_length = strlen(response);
-            if (gzip(response, response_length, compressed, &compressed_length) == Z_OK) {
+            if (gzip(response, response_length, compressed, &compressed_len) == Z_OK) {
                 sprintf(bufResponse, "HTTP/1.1 200 OK\r\nContent-Encoding: gzip\r\nContent-Type: text/plain\r\nContent-Length: %zu\r\n\r\n", compressed_length);
-                memcpy(bufResponse + strlen(bufResponse), compressed, compressed_length);
-                *resp_len = strlen(bufResponse) + compressed_length;
+                //memcpy(bufResponse + strlen(bufResponse), compressed, compressed_length);
+                //*resp_len = strlen(bufResponse) + compressed_length;
+                *resp_len = strlen(bufResponse);
             }
         } else {
             sprintf(bufResponse, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s", i, response);
@@ -483,6 +484,8 @@ void response (int conn_fd) {
     char response[MAX_LINE];
     char true_path[PATH];
 
+    char compressed[MAX_LINE];
+
     /* initialize internal buffer to read from conn_fd */
     rio_init(&riot, conn_fd);
     
@@ -565,6 +568,8 @@ void response (int conn_fd) {
     char *path_ptr;
     int resp_len;
 
+    int compressed_len;
+
     if ((path_ptr = strstr(true_path, "echo")) != NULL) {
         char *enc;
         for (int i = 0; i < header_count; i++) {
@@ -572,10 +577,9 @@ void response (int conn_fd) {
                 break;
             }
         }
-        echo_endpoint(bufResponse, path_ptr, response, enc, &resp_len);
+        echo_endpoint(bufResponse, path_ptr, response, enc, &resp_len, compressed, &compressed_len);
         send(conn_fd, bufResponse, resp_len, 0);
-        return;
-        
+        send(conn_fd, compressed, strlen(compressed), 0);
 
     } else if ((path_ptr = strstr(true_path, "user-agent")) != NULL) {
         char *user_agent;
