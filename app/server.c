@@ -199,7 +199,7 @@ void find_path (char *path, char *string) {
     }
 }
 
-int gzip (char *input, size_t input_len, char *output, size_t *output_len) {
+int gzip (char *input, size_t input_len, char *output, int *output_len) {
     int ret;
     z_stream stream;
 
@@ -579,7 +579,7 @@ void response (int conn_fd) {
         }
         echo_endpoint(bufResponse, path_ptr, response, enc, &resp_len, compressed, &compressed_len);
         send(conn_fd, bufResponse, resp_len, 0);
-        send(conn_fd, compressed, strlen(compressed), 0);
+        send(conn_fd, compressed, compressed_len, 0);
 
     } else if ((path_ptr = strstr(true_path, "user-agent")) != NULL) {
         char *user_agent;
