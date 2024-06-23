@@ -573,7 +573,7 @@ void response (int conn_fd) {
             }
         }
         echo_endpoint(bufResponse, path_ptr, response, enc, &resp_len);
-        send(conn_fd, bufResponse, resp_len);
+        send(conn_fd, bufResponse, resp_len, 0);
         return;
         
 
