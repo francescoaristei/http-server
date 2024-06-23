@@ -199,7 +199,7 @@ void find_path (char *path, char *string) {
     }
 }
 
-int gzip (char *input, size_t input_len, char *output, int *output_len) {
+int gzip (char *input, size_t input_len, char *output, size_t *output_len) {
     int ret;
     z_stream stream;
 
@@ -237,7 +237,7 @@ int gzip (char *input, size_t input_len, char *output, int *output_len) {
 
 
 /* echo endpoint */
-void echo_endpoint (char *bufResponse, char *ptr, char *response, char *encoding, int *resp_len, char *compressed, int *compressed_len) {
+void echo_endpoint (char *bufResponse, char *ptr, char *response, char *encoding, int *resp_len, char *compressed, size_t *compressed_len) {
     int len = strlen("echo");
     ptr += len;
     int i;
@@ -568,7 +568,7 @@ void response (int conn_fd) {
     char *path_ptr;
     int resp_len;
 
-    int compressed_len;
+    size_t compressed_len = sizeof(compressed);
 
     if ((path_ptr = strstr(true_path, "echo")) != NULL) {
         char *enc;
@@ -580,6 +580,7 @@ void response (int conn_fd) {
         echo_endpoint(bufResponse, path_ptr, response, enc, &resp_len, compressed, &compressed_len);
         send(conn_fd, bufResponse, resp_len, 0);
         send(conn_fd, compressed, compressed_len, 0);
+        return;
 
     } else if ((path_ptr = strstr(true_path, "user-agent")) != NULL) {
         char *user_agent;
