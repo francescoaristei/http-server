@@ -208,7 +208,8 @@ int gzip (char *input, size_t input_len, char *output, size_t *output_len) {
     stream.opaque = Z_NULL;
 
     /* initialize zlib stream for compression */
-    ret = deflateInit(&stream, Z_DEFAULT_COMPRESSION);
+    //ret = deflateInit(&stream, Z_DEFAULT_COMPRESSION);
+    ret = deflateInit2(&stream, Z_DEFAULT_COMPRESSION, Z_DEFLATED, 0x1F, 8, Z_DEFAULT_STRATEGY);
 
     if (ret != Z_OK) {
         return ret;
