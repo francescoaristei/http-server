@@ -264,8 +264,8 @@ void echo_endpoint (char *bufResponse, char *ptr, char *response, char *encoding
             //char compressed[MAX_LINE];
             //size_t compressed_length = sizeof(compressed);
             size_t response_length = strlen(response);
-            if (gzip(response, response_length, compressed, &compressed_len) == Z_OK) {
-                sprintf(bufResponse, "HTTP/1.1 200 OK\r\nContent-Encoding: gzip\r\nContent-Type: text/plain\r\nContent-Length: %zu\r\n\r\n", compressed_length);
+            if (gzip(response, response_length, compressed, compressed_len) == Z_OK) {
+                sprintf(bufResponse, "HTTP/1.1 200 OK\r\nContent-Encoding: gzip\r\nContent-Type: text/plain\r\nContent-Length: %zu\r\n\r\n", compressed_len);
                 //memcpy(bufResponse + strlen(bufResponse), compressed, compressed_length);
                 //*resp_len = strlen(bufResponse) + compressed_length;
                 *resp_len = strlen(bufResponse);
